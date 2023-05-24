@@ -7,16 +7,35 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web"
+    
   },
   "dependencies": {
+    "@expo/vector-icons": "^13.0.0",
+    "@react-native-async-storage/async-storage": "^1.18.1",
+    "@react-native-seoul/masonry-list": "^1.4.1",
+    "@react-navigation/bottom-tabs": "^6.5.7",
+    "@react-navigation/native": "^6.1.6",
+    "@react-navigation/native-stack": "^6.9.12",
+    "@reduxjs/toolkit": "^1.9.5",
+    "@spicysparks/rn-dominant-color": "^1.7.1",
     "expo": "~48.0.10",
+    "expo-image-picker": "^14.1.1",
+    "expo-permissions": "^14.1.1",
     "expo-status-bar": "~1.4.4",
+    "firebase": "^9.19.1",
     "react": "18.2.0",
-    "react-native": "0.71.6"
+    "react-native": "0.71.6",
+    "react-native-linear-gradient": "^2.6.2",
+    "react-native-safe-area-context": "4.5.0",
+    "react-native-screens": "~3.20.0",
+    "react-redux": "^8.0.5",
+    "redux": "^4.2.1",
+    "redux-thunk": "^2.4.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "@types/react": "~18.0.14",
+    "prettier": "^2.8.7",
     "typescript": "^4.9.4"
   },
   "private": true
