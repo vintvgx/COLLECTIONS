@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { RootStackParams } from "../navigation/Navigation";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 interface ProfileMainProps {
   profilePicture: string;
@@ -13,7 +15,8 @@ const ProfileMain: React.FC<ProfileMainProps> = ({
   collections,
   fans,
 }) => {
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const goToProfileSettings = () => {
     navigation.navigate("ProfileSettings");

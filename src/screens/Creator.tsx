@@ -13,10 +13,12 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
 import { useNavigation } from "@react-navigation/native";
+import { ImageData } from "../utils/types";
 
 import AddToCollectionButton from "../components/AddToCollectionButton";
+import { connectStorageEmulator } from "firebase/storage";
 
-type ImageData = { uri: string };
+// type ImageData = { uri: string };
 
 const Create: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
@@ -43,6 +45,7 @@ const Create: React.FC = () => {
       }
     };
     getPermissions();
+    console.log(images);
   }, []);
 
   const addCollection = async () => {
@@ -112,11 +115,11 @@ const Create: React.FC = () => {
               <Text
                 style={{
                   textAlign: "center",
-                  fontSize: 50,
-                  color: "white",
-                  width: "95%",
                   position: "absolute",
-                  top: 20,
+                  fontSize: "50",
+                  color: "white",
+                  top: "20%",
+                  width: "95%",
                 }}>
                 Collection+
               </Text>

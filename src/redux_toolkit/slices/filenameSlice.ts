@@ -3,7 +3,6 @@ import { AppDispatch, RootState } from "../store";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebase/f9_config";
 import { ImageCollectionData, DataState, Collections } from "../../utils/types";
-import { Image } from "react-native/types";
 
 //initial state
 const initialState: DataState = {
@@ -60,12 +59,11 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
     );
     dispatch(setFilenames(filenames));
 
-    const userCoverImages: ImageCollectionData[] = [];
     const collectionsData = await Promise.all(
       filenames.map(async (file) => {
         const collectionRef = `collections/${user}/files/${file}/images`;
         console.log(collectionRef);
-        const userCollections: Collections[] = [];
+
         const fetchCollections = await getDocs(
           await collection(db, collectionRef)
         );
@@ -77,19 +75,11 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
           const uri = collection.data().imgUri;
           // console.log(uri);
           const title = collection.data().title;
-          console.log(title);
+          // console.log(title);
           userImageCollection.push({
             images: collection_images,
             imgUri: uri,
             title,
-            // imgUri: uri,
-            // title: title,
-          });
-          userCollections.push({
-            images: collection_images,
-            imgUri: uri,
-            collections: [],
-            title: title,
           });
         });
         dispatch(setCollectionData(userImageCollection));

@@ -24,7 +24,11 @@ import ProfileMain from "../components/ProfileMAIN";
 const { width } = Dimensions.get("window");
 const COVER_WIDTH = width * 0.9;
 
-function Profile(collectionData: { collectionData: ImageCollectionData[] }) {
+export interface ProfileData {
+  collectionData: ImageCollectionData[];
+}
+
+const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   const dispatch = useAppDispatch();
 
   const { collectionsData } = useAppSelector(({ filenames }) => filenames);
@@ -95,7 +99,7 @@ function Profile(collectionData: { collectionData: ImageCollectionData[] }) {
       </View>
     </SafeAreaView>
   );
-}
+};
 
 export default Profile;
 

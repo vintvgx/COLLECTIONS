@@ -14,6 +14,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeStack } from "./src/navigation/Navigation";
 import { RegisterStack } from "./src/navigation/Navigation";
+import { MAIN } from "./src/navigation/Navigation";
 
 export default function App() {
   const [isLoggedIn, setisLoggedIn] = useState(false);
@@ -21,7 +22,7 @@ export default function App() {
 
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
-      // console.log(user);
+      console.log(user);
       if (!user) {
         setisLoggedIn(false);
         console.log("NOT SIGNED IN");
@@ -43,7 +44,7 @@ export default function App() {
   if (isLoggedIn) {
     return (
       <Provider store={store}>
-        <HomeStack />
+        <MAIN />
       </Provider>
     );
   }
