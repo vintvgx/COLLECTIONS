@@ -10,20 +10,13 @@ import {
   Animated,
   TouchableOpacity,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
+import { useAppDispatch, useAppSelector } from "../redux_toolkit";
+//TODO: Try MasonryList for view or develop code to create a masonry view / add onScroll feature that loads image as they are needed
 import MasonryList from "@react-native-seoul/masonry-list";
 
-import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchFilenames,
-  selectCollectionData,
-  selectFilenames,
-} from "../redux_toolkit/slices/filenameSlice";
-import ProfileCard from "../components/ProfileCards/ProfileCard";
-import ProfileRectangle from "../components/ProfileCards/ProfileRectangle";
+import { fetchFilenames } from "../redux_toolkit/slices/filenameSlice";
 
-import { useAppDispatch, useAppSelector } from "../redux_toolkit";
 import { ImageCollectionData, ImageData } from "../utils/types";
 import ProfileMain from "../components/ProfileMAIN";
 
@@ -31,38 +24,21 @@ import ProfileMain from "../components/ProfileMAIN";
 const { width } = Dimensions.get("window");
 const COVER_WIDTH = width * 0.9;
 
-function Profile({
-  collectionData,
-}: {
-  collectionData: ImageCollectionData[];
-}) {
+function Profile(collectionData: { collectionData: ImageCollectionData[] }) {
   const dispatch = useAppDispatch();
+
   const { collectionsData } = useAppSelector(({ filenames }) => filenames);
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
-  const [imageColors, setImageColors] = useState(["#ffffff", "#ffffff"]);
-  const [bgColor, setBgColor] = useState("#fff");
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     //@ts-ignore
     dispatch(fetchFilenames());
-
-    const fetchDominantColor = async (item: any) => {
-      const colors = await getColorFromURL(item.imgUri);
-      setImageColors(colors);
-    };
-
-    fetchDominantColor(collectionCovers);
   }, [dispatch]);
 
   const onTap = (item: any) => {
     console.log(item);
   };
-
-  //*PROFILESWIPE
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollX = useRef(new Animated.Value(0)).current;
-
-  const profile = collectionCovers[0].imgUri;
 
   const renderItem = ({ item, index }: any) => {
     return (

@@ -1,5 +1,6 @@
 import React from "react";
-import { View, Image, Text, StyleSheet } from "react-native";
+import { View, Image, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 interface ProfileMainProps {
   profilePicture: string;
@@ -12,11 +13,17 @@ const ProfileMain: React.FC<ProfileMainProps> = ({
   collections,
   fans,
 }) => {
+  const navigation = useNavigation();
+
+  const goToProfileSettings = () => {
+    navigation.navigate("ProfileSettings");
+  };
+
   return (
     <View style={styles.container}>
-      <View style={styles.circle}>
+      <TouchableOpacity onPress={goToProfileSettings} style={styles.circle}>
         <Image source={{ uri: profilePicture }} style={styles.profileImage} />
-      </View>
+      </TouchableOpacity>
       <View style={styles.row}>
         <View style={styles.numberContainer}>
           <Text style={styles.labelText}>Collections</Text>
