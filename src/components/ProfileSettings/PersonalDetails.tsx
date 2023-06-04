@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ProfileUser, UserData } from "../../utils/types";
@@ -31,6 +33,11 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
 
   const { firstName, lastName, username, bio, avatar } = useAppSelector(
     (state) => state.userData.userData
+  );
+
+  const [avatarUri, setAvatarUri] = useState<string | undefined>(avatar?.uri);
+  const [updatedAvatar, setUpdatedAvatar] = useState<ImageData | undefined>(
+    undefined
   );
 
   const [formData, setFormData] = useState<UserData>({
@@ -67,9 +74,18 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
   }, [dispatch]);
 
   const handleSave = async () => {
-    //@ts-ignore
-    await dispatch(saveUserData(formData));
-    handleBack();
+    try {
+      if (updatedAvatar) {
+        //@ts-ignore
+        await dispatch(saveUserData({ ...formData, avatar: updatedAvatar }));
+      } else {
+        //@ts-ignore
+        await dispatch(saveUserData({ formData, avatar: formData.avatar }));
+      }
+      handleBack();
+    } catch {
+      console.log("Error saving personal details");
+    }
   };
 
   const handleChange = (field: keyof UserData, value: string) => {
@@ -114,7 +130,9 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
 
       try {
         //@ts-ignore
-        dispatch(saveUserData({ ...formData, avatar: updatedAvatar }));
+        // dispatch(saveUserData({ ...formData, avatar: updatedAvatar }));
+        setUpdatedAvatar(updatedAvatar);
+        setAvatarUri(updatedAvatar.uri);
         console.log("Dispatch called");
       } catch {
         console.log("Error saving avatar");
@@ -123,63 +141,68 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => handleBack()}>
-          <Text style={styles.backButton}>Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Personal Details</Text>
-        <TouchableOpacity onPress={() => handleSave()}>
-          <Text style={styles.saveButton}>Save</Text>
-        </TouchableOpacity>
-      </View>
+    <TouchableWithoutFeedback
+      onPress={() => {
+        Keyboard.dismiss();
+      }}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => handleBack()}>
+            <Text style={styles.backButton}>Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Personal Details</Text>
+          <TouchableOpacity onPress={() => handleSave()}>
+            <Text style={styles.saveButton}>Save</Text>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity style={styles.circle} onPress={addCollection}>
-        {avatar?.uri ? (
-          <Image source={{ uri: avatar.uri }} style={styles.profileImage} />
-        ) : (
-          <View style={styles.emptyCircle} />
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.circle} onPress={addCollection}>
+          {avatar?.uri ? (
+            <Image source={{ uri: avatarUri }} style={styles.profileImage} />
+          ) : (
+            <View style={styles.emptyCircle} />
+          )}
+        </TouchableOpacity>
 
-      <View style={styles.profileInfo}>
-        <Text style={styles.label}>First Name</Text>
-        <TextInput
-          onFocus={() => handleTextInputFocus("firstName")}
-          value={formData.firstName}
-          onChangeText={(value) => handleChange("firstName", value)}
-          style={styles.textInput}
-        />
-      </View>
-      <View style={styles.profileInfo}>
-        <Text style={styles.label}>Last Name</Text>
-        <TextInput
-          onFocus={() => handleTextInputFocus("lastName")}
-          value={formData.lastName}
-          onChangeText={(value) => handleChange("lastName", value)}
-          style={styles.textInput}
-        />
-      </View>
-      <View style={styles.profileInfo}>
-        <Text style={styles.label}>Username</Text>
-        <TextInput
-          onFocus={() => handleTextInputFocus("username")}
-          value={formData.username}
-          onChangeText={(value) => handleChange("username", value)}
-          style={styles.textInput}
-        />
-      </View>
-      <View style={styles.profileInfo}>
-        <Text style={styles.label}>Bio</Text>
-        <TextInput
-          onFocus={() => handleTextInputFocus("bio")}
-          value={formData.bio}
-          onChangeText={(value) => handleChange("bio", value)}
-          style={[styles.textInput, styles.multilineTextInput]}
-          multiline
-        />
-      </View>
-    </SafeAreaView>
+        <View style={styles.profileInfo}>
+          <Text style={styles.label}>First Name</Text>
+          <TextInput
+            onFocus={() => handleTextInputFocus("firstName")}
+            value={formData.firstName}
+            onChangeText={(value) => handleChange("firstName", value)}
+            style={styles.textInput}
+          />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.label}>Last Name</Text>
+          <TextInput
+            onFocus={() => handleTextInputFocus("lastName")}
+            value={formData.lastName}
+            onChangeText={(value) => handleChange("lastName", value)}
+            style={styles.textInput}
+          />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.label}>Username</Text>
+          <TextInput
+            onFocus={() => handleTextInputFocus("username")}
+            value={formData.username}
+            onChangeText={(value) => handleChange("username", value)}
+            style={styles.textInput}
+          />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.label}>Bio</Text>
+          <TextInput
+            onFocus={() => handleTextInputFocus("bio")}
+            value={formData.bio}
+            onChangeText={(value) => handleChange("bio", value)}
+            style={[styles.textInput, styles.multilineTextInput]}
+            multiline
+          />
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 };
 

@@ -21,6 +21,7 @@ import { fetchUserData } from "../redux_toolkit/slices/user_data";
 
 import { ImageCollectionData, ImageData } from "../utils/types";
 import ProfileMain from "../components/ProfileMAIN";
+import { useNavigation } from "@react-navigation/native";
 
 //*PROFILESWIPE
 const { width } = Dimensions.get("window");
@@ -32,6 +33,8 @@ export interface ProfileData {
 
 const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   const dispatch = useAppDispatch();
+
+  const navigation = useNavigation();
 
   const { collectionsData } = useAppSelector(({ filenames }) => filenames);
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
@@ -46,6 +49,22 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
     dispatch(fetchUserData());
     console.log("AVATAR?" + avatar?.uri);
   }, [dispatch]);
+
+  useEffect(() => {
+    // @ts-ignore
+    dispatch(fetchUserData());
+    dispatch(fetchFilenames());
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      // Fetch updated user data when the screen comes into focus
+      // @ts-ignore
+      dispatch(fetchUserData());
+      dispatch(fetchFilenames());
+    });
+
+    // Cleanup the listener when the component unmounts
+    return unsubscribe;
+  }, [navigation, dispatch]);
 
   const onTap = (item: any) => {
     console.log(item);

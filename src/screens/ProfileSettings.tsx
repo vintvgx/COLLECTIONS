@@ -50,11 +50,25 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
     }));
   };
 
+  // useEffect(() => {
+  //   console.log("OUTPUT: " + firstName + lastName + username + bio);
+  //   // @ts-ignore
+  //   dispatch(fetchUserData());
+  // }, [dispatch]);
+
   useEffect(() => {
-    console.log("OUTPUT: " + firstName + lastName + username + bio);
     // @ts-ignore
     dispatch(fetchUserData());
-  }, [dispatch]);
+
+    const unsubscribe = navigation.addListener("focus", () => {
+      // Fetch updated user data when the screen comes into focus
+      // @ts-ignore
+      dispatch(fetchUserData());
+    });
+
+    // Cleanup the listener when the component unmounts
+    return unsubscribe;
+  }, [navigation, dispatch]);
 
   const handleSave = () => {
     //@ts-ignore
