@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ProfileUser, UserData } from "../../utils/types";
@@ -20,8 +21,6 @@ import * as Permissions from "expo-permissions";
 interface ProfileSettingsProps extends ProfileUser {}
 
 const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
-  const [images, setImages] = useState<ImageData[]>([]);
-
   const dispatch = useDispatch();
 
   const navigation = useNavigation();
@@ -43,9 +42,10 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
   });
 
   useEffect(() => {
-    console.log("OUTPUT: " + firstName + lastName + username + bio);
+    console.log("OUTPUT: " + firstName + lastName + username + bio + avatar);
     //@ts-ignore
     dispatch(fetchUserData());
+    console.log("PersonalDetails: avatar?" + avatar?.uri);
 
     const getPermissions = async () => {
       const { status: cameraStatus } = await Permissions.askAsync(
@@ -66,9 +66,9 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
     getPermissions();
   }, [dispatch]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     //@ts-ignore
-    dispatch(saveUserData(formData));
+    await dispatch(saveUserData(formData));
     handleBack();
   };
 
@@ -90,16 +90,36 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
       quality: 1,
-      allowsMultipleSelection: true,
-      selectionLimit: 20,
+      allowsMultipleSelection: false,
     });
 
     if (!result.canceled) {
-      setImages(result.assets);
+      const selectedImage = result.assets[0];
       // setImages([...images, { uri: result.uri }]);
-    }
+      console.log(selectedImage);
+      const updatedAvatar = {
+        assetId: selectedImage.assetId,
+        base64: selectedImage.base64,
+        duration: selectedImage.duration,
+        exif: selectedImage.exif,
+        fileName: selectedImage.fileName,
+        fileSize: selectedImage.fileSize,
+        height: selectedImage.height,
+        type: selectedImage.type,
+        uri: selectedImage.uri,
+        width: selectedImage.width,
+      };
 
-    console.log(images);
+      console.log(`UPDATED AVATAR: ${updatedAvatar}`);
+
+      try {
+        //@ts-ignore
+        dispatch(saveUserData({ ...formData, avatar: updatedAvatar }));
+        console.log("Dispatch called");
+      } catch {
+        console.log("Error saving avatar");
+      }
+    }
   };
 
   return (
@@ -114,8 +134,12 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.circle}>
-        {/* <Image source={{ uri: profilePicture }} style={styles.profileImage} /> */}
+      <TouchableOpacity style={styles.circle} onPress={addCollection}>
+        {avatar?.uri ? (
+          <Image source={{ uri: avatar.uri }} style={styles.profileImage} />
+        ) : (
+          <View style={styles.emptyCircle} />
+        )}
       </TouchableOpacity>
 
       <View style={styles.profileInfo}>
@@ -173,6 +197,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 20,
   },
+  emptyCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "#e6e6e6",
+  },
   backButton: {
     fontSize: 16,
     fontWeight: "bold",
@@ -199,6 +229,11 @@ const styles = StyleSheet.create({
     marginTop: 35,
 
     alignSelf: "center",
+  },
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
   },
   profileInfo: {
     marginBottom: 20,

@@ -11,9 +11,9 @@ export interface DataState {
 
 export interface ImageData {
   assetId: string;
-  base64: null;
-  duration: null;
-  exif: null;
+  base64?: null;
+  duration?: null;
+  exif?: null;
   fileName: string;
   fileSizE: number;
   height: number;

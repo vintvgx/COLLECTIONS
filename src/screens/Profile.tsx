@@ -17,6 +17,8 @@ import MasonryList from "@react-native-seoul/masonry-list";
 
 import { fetchFilenames } from "../redux_toolkit/slices/filenameSlice";
 
+import { fetchUserData } from "../redux_toolkit/slices/user_data";
+
 import { ImageCollectionData, ImageData } from "../utils/types";
 import ProfileMain from "../components/ProfileMAIN";
 
@@ -33,11 +35,16 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
 
   const { collectionsData } = useAppSelector(({ filenames }) => filenames);
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
+  const { firstName, lastName, username, bio, avatar } = useAppSelector(
+    (state) => state.userData.userData
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
     //@ts-ignore
     dispatch(fetchFilenames());
+    dispatch(fetchUserData());
+    console.log("AVATAR?" + avatar?.uri);
   }, [dispatch]);
 
   const onTap = (item: any) => {
@@ -59,11 +66,12 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <View style={styles.navigation}>
-        <ProfileMain
+        <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} />
+        {/* <ProfileMain
           profilePicture="../../assets/stature.jpg"
           collections={123}
           fans={50}
-        />
+        /> */}
       </View>
       <View style={styles.body}>
         <View style={styles.container}>

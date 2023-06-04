@@ -25,7 +25,7 @@ interface ProfileSettingsProps extends ProfileUser {}
 const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
   const dispatch = useDispatch();
 
-  const { firstName, lastName, username, bio } = useAppSelector(
+  const { firstName, lastName, username, bio, avatar } = useAppSelector(
     (state) => state.userData.userData
   );
 
@@ -34,6 +34,7 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
     lastName: lastName,
     username: username,
     bio: bio,
+    avatar: avatar,
   });
 
   const navigation = useNavigation();
@@ -51,13 +52,17 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
 
   useEffect(() => {
     console.log("OUTPUT: " + firstName + lastName + username + bio);
-    //@ts-ignore
+    // @ts-ignore
     dispatch(fetchUserData());
   }, [dispatch]);
 
   const handleSave = () => {
     //@ts-ignore
     dispatch(saveUserData(formData));
+  };
+
+  const handleGoBack = () => {
+    navigation.goBack();
   };
 
   return (
@@ -71,7 +76,12 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
         }}
       /> */}
       <View style={styles.header}>
-        <Text style={styles.title}>Profile Settings</Text>
+        <View style={{ flexDirection: "row" }}>
+          <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
+            <MaterialIcons name="arrow-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Profile Settings</Text>
+        </View>
         <Text style={styles.subtitle}>
           Set Profile View settings & user configuration
         </Text>
@@ -79,7 +89,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
       <ScrollView style={styles.container}>
         <View style={styles.profile_header}>
           <TouchableOpacity style={styles.circle}>
-            {/* <Image source={{ uri: profilePicture }} style={styles.profileImage} /> */}
+            {avatar?.uri ? (
+              <Image source={{ uri: avatar.uri }} style={styles.profileImage} />
+            ) : (
+              <View style={styles.emptyCircle} />
+            )}
           </TouchableOpacity>
           <View style={{ marginLeft: 30, marginTop: 20 }}>
             <View style={{ flexDirection: "row" }}>
@@ -196,9 +210,20 @@ const styles = StyleSheet.create({
     borderColor: "#e3e3e3",
   },
   header: {
-    paddingLeft: 24,
+    // flexDirection: "row",
+    // alignItems: "center",
+    paddingLeft: 16,
     paddingRight: 24,
     marginTop: 25,
+  },
+  emptyCircle: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: "#e6e6e6",
+  },
+  backButton: {
+    marginRight: 16,
   },
   title: {
     fontSize: 32,
@@ -232,6 +257,11 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 35,
     marginLeft: 20,
+  },
+  profileImage: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
   },
   profile_info: {
     marginBottom: 20,
