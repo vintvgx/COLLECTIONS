@@ -80,7 +80,13 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
         await dispatch(saveUserData({ ...formData, avatar: updatedAvatar }));
       } else {
         //@ts-ignore
-        await dispatch(saveUserData({ ...formData, avatar: formData.avatar }));
+        // await dispatch(saveUserData({ ...formData, avatar: formData.avatar }));
+        const updatedData = {
+          ...formData,
+          avatar: avatar,
+        };
+        //@ts-ignore
+        await dispatch(saveUserData(updatedData));
       }
       handleBack();
     } catch {
