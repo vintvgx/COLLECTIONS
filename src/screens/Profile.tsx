@@ -33,50 +33,7 @@ export interface ProfileData {
   collectionData: ImageCollectionData[];
 }
 
-// const CollectionCard: React.FC<{ item: ImageData }> = ({ item }) => {
-//   const randomBool = useMemo(() => Math.random() < 0.5, []);
-
-//   return (
-//     <View key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
-//       <Image
-//         source={{ uri: item.uri }}
-//         style={{
-//           height: randomBool ? 150 : 280,
-//           alignSelf: "stretch",
-//         }}
-//         resizeMode="cover"
-//       />
-//       <Text
-//         style={{
-//           marginTop: 8,
-//           // color: theme.text,
-//         }}>
-//         {item.fileName}
-//       </Text>
-//     </View>
-//   );
-// };
-
 const CollectionCard: React.FC<{ item: ImageData }> = ({ item }) => {
-  const randomBool = useMemo(() => Math.random() < 0.5, []);
-  return (
-    <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
-      <View style={[{ marginLeft: item.height % 2 === 0 ? 0 : 12 }]}>
-        <Image
-          source={{ uri: item.uri }}
-          style={{
-            height: randomBool ? 150 : 280,
-            alignSelf: "stretch",
-          }}
-          resizeMode="cover"
-        />
-        <Text style={{ marginTop: 8 }}>{item.fileName}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-const CardCollection = ({ item }: any) => {
   const randomBool = useMemo(() => Math.random() < 0.5, []);
   return (
     <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
@@ -132,10 +89,6 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
     return unsubscribe;
   }, [navigation, dispatch]);
 
-  const onTap = (item: any) => {
-    console.log(item);
-  };
-
   const formattedData = collectionCovers
     ? collectionCovers.map((item, index) => {
         const width = Math.floor(Math.random() * 2) + 1; // Random width between 1 and 2
@@ -148,19 +101,22 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
           width: width,
           height: height,
           randomBool: randomBool,
+          key: index,
         };
       })
     : [];
 
   const renderItem = ({ item, index }: any) => {
-    // if (formattedData.length > 0) {
-    //   // Render CollectionCard for MasonryList
-    //   return <CardCollection item={item} />;
-    // } else {
-    // Render regular item for FlatList
+    console.log(`INDEX: ${item.key}`);
     return (
       <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
-        <View style={[{ marginLeft: index % 2 === 0 ? 0 : 12 }]}>
+        <View
+          style={[
+            {
+              marginLeft: item.index % 2 === 0 ? 0 : 10,
+              position: "relative",
+            },
+          ]}>
           <Image
             source={{ uri: item.imgUri }}
             style={{
@@ -169,8 +125,17 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
             }}
             resizeMode="cover"
           />
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.views}>234 views</Text>
+          <View
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              // backgroundColor: "rgba(0, 0, 0, 0.5)",
+              padding: 5,
+            }}>
+            <Text style={styles.title}>{item.title}</Text>
+            <Text style={styles.views}>234 views</Text>
+          </View>
         </View>
       </TouchableOpacity>
     );
@@ -178,48 +143,27 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <View style={styles.navigation}>
         <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} />
-        {/* <ProfileMain
-          profilePicture="../../assets/stature.jpg"
-          collections={123}
-          fans={50}
-        /> */}
       </View>
       <View style={styles.body}>
-        <View>
-          <ScrollView>
-            {/* <FlatList
-              data={collectionCovers}
-              keyExtractor={(item, index) => index.toString()}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              renderItem={renderItem}
-              onMomentumScrollEnd={(ev) => {
-                const index = Math.floor(
-                  ev.nativeEvent.contentOffset.x / width
-                );
-                setCurrentIndex(index);
-              }}
-            /> */}
-            <MasonryList
-              data={formattedData}
-              numColumns={2} // Specify the number of columns you want in the masonry view
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={renderItem}
-              contentContainerStyle={{
-                paddingHorizontal: 24,
-                alignSelf: "stretch",
-              }}
-              // onMomentumScrollEnd={(ev) => {
-              //   const index = Math.floor(ev.nativeEvent.contentOffset.x / width);
-              //   setCurrentIndex(index);
-              // }}
-            />
-          </ScrollView>
-        </View>
+        <ScrollView style={{ marginTop: 25 }}>
+          <MasonryList
+            data={formattedData}
+            numColumns={2} // Specify the number of columns you want in the masonry view
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={renderItem}
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              alignSelf: "stretch",
+            }}
+            onMomentumScrollEnd={(ev) => {
+              const index = Math.floor(ev.nativeEvent.contentOffset.x / width);
+              setCurrentIndex(index);
+            }}
+          />
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -235,6 +179,7 @@ const styles = StyleSheet.create({
   body: {
     flex: 9,
     justifyContent: "center",
+    backgroundColor: "#dedede",
   },
   footer: {
     flex: 1,
@@ -263,14 +208,25 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
+    // fontSize: 17,
+    // fontWeight: "700",
     textAlign: "left",
-    marginLeft: 40,
+    fontFamily: "Inter",
+    fontStyle: "normal",
+    fontWeight: "500",
+    fontSize: 16,
+    lineHeight: 19,
+    // marginLeft: 40,
+    marginBottom: 2,
+    color: "rgba(255, 255, 255, 0.88)",
   },
   views: {
-    marginLeft: 40,
-    marginTop: 8,
+    fontFamily: "Inter",
+    fontStyle: "normal",
+    fontWeight: "500",
+    fontSize: 10,
+    lineHeight: 10,
+    color: "rgba(255, 255, 255, 0.69)",
   },
   pageIndicator: {
     flexDirection: "row",
