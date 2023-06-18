@@ -9,23 +9,42 @@ import {
   Image,
   StyleSheet,
   Dimensions,
+  Modal,
+  TextInput,
+  Button,
 } from "react-native";
+
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
 import { useNavigation } from "@react-navigation/native";
-import { ImageData } from "../utils/types";
+import { ImageCollectionData, ImageData } from "../utils/types";
 
 import AddToCollectionButton from "../components/AddToCollectionButton";
 import { connectStorageEmulator } from "firebase/storage";
+import { handleSaveButtonPress } from "../utils/functions";
+import { useDispatch } from "react-redux";
+import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
 // type ImageData = { uri: string };
 
 const Create: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [cover, setCover] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [collectionTitle, setCollectionTitle] = useState("");
+  const [imageCount, setImageCount] = useState(0);
+  const uploadTime = new Date().toLocaleTimeString(); // or use any suitable format
+  const dispatch = useDispatch();
+
   // const navigation = useNavigation();
   // const navigation =
   //   useNavigation<NativeStackNavigationProp<RootStackParams>>();
+
+  const [data, setCollectionData] = useState<ImageCollectionData>({
+    images: images,
+    imgUri: "fix",
+    title: collectionTitle,
+  });
 
   useEffect(() => {
     const getPermissions = async () => {
@@ -78,6 +97,39 @@ const Create: React.FC = () => {
       setImages(result.assets);
       // setImages([...images, { uri: result.uri }]);
     }
+  };
+
+  const handleConfirmButtonPressed = async () => {
+    if (images.length === 0) {
+      return;
+    }
+
+    try {
+      const dataState: ImageCollectionData = {
+        images,
+        imgUri: "fix",
+        title: collectionTitle,
+      };
+
+      if (collectionTitle == "") {
+        console.log("ENTER TITLE U DWEEB!");
+      } else {
+        // @ts-ignore
+        await dispatch(addCollectionData(dataState));
+        setCollectionTitle("");
+        setImageCount(0);
+        setShowModal(false);
+        setImages([]);
+      }
+    } catch (error) {
+      console.log("Error:", error);
+    }
+  };
+
+  const handleSaveButtonPress = () => {
+    setCollectionTitle("");
+    setImageCount(images.length);
+    setShowModal(true);
   };
 
   return (
@@ -149,6 +201,19 @@ const Create: React.FC = () => {
         </View>
       ) : (
         <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            // onPress={() => {
+            //   handleSaveButtonPress(
+            //     setCollectionTitle,
+            //     setImageCount,
+            //     setShowModal,
+            //     images
+            //   );
+            // }}
+            onPress={handleSaveButtonPress}
+            style={styles.saveButton}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
           <View style={{ flex: 1 }}>
             <Image source={{ uri: cover }} style={styles.cover_image} />
           </View>
@@ -174,6 +239,37 @@ const Create: React.FC = () => {
               )}
             />
           </View>
+          <Modal visible={showModal} animationType="slide" transparent>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Collection Details</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Collection Title"
+                  value={collectionTitle}
+                  onChangeText={setCollectionTitle}
+                />
+                <Text style={styles.modalSubtitle}>
+                  Image Count: {imageCount}
+                </Text>
+                <Text style={styles.modalSubtitle}>
+                  Upload Time: {uploadTime}
+                </Text>
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setShowModal(false)}>
+                    <Text style={styles.cancelButtonText}>Cancel</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={styles.confirmButton}
+                    onPress={handleConfirmButtonPressed}>
+                    <Text style={styles.confirmButtonText}>Confirm</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
         </View>
       )}
     </View>
@@ -208,5 +304,79 @@ const styles = StyleSheet.create({
     aspectRatio: 1,
     resizeMode: "contain",
     alignSelf: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    //TODO: Add blur effect to background
+    // backdropFilter: "blur(5px)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 40,
+    borderRadius: 10,
+    elevation: 5,
+    width: "70%",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    marginBottom: 5,
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  saveButton: {
+    position: "absolute",
+    top: 40,
+    right: 20,
+    backgroundColor: "#212121",
+    borderRadius: 10,
+    padding: 10,
+    zIndex: 2,
+  },
+  saveButtonText: {
+    color: "white",
+    fontSize: 16,
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+  },
+  cancelButton: {
+    // backgroundColor: "red",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    // borderWidth: 1,
+    // borderColor: "black",
+  },
+  cancelButtonText: {
+    color: "red",
+    fontSize: 16,
+  },
+  confirmButton: {
+    backgroundColor: "black",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "gray",
+  },
+  confirmButtonText: {
+    color: "white",
   },
 });

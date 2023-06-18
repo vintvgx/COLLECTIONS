@@ -23,15 +23,6 @@ import {
   uploadBytesResumable,
 } from "firebase/storage";
 
-// const initialState: UserState = {
-//   firstName: "",
-//   lastName: "",
-//   username: "",
-//   bio: "",
-//   isLoading: false,
-//   error: null,
-// };
-
 const initialState: ProfileUser = {
   userData: {
     firstName: "",
@@ -59,12 +50,6 @@ const userDataSlice = createSlice({
   name: "userData",
   initialState,
   reducers: {
-    // setUserData: (state, action: PayloadAction<UserData>) => {
-    //   return {
-    //     ...state,
-    //     ...action.payload,
-    //   };
-    // },
     setUserData: (state, action: PayloadAction<UserData>) => {
       state.userData = action.payload;
     },
