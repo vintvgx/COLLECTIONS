@@ -94,76 +94,128 @@ export const saveUserData =
           // const avatarRef = storageRef.child(`${user.uid}/avatar.jpg`);
 
           const avatarRef = ref(storage, `${user.uid}/avatar.jpg`);
-          // console.log(avatarRef);
 
-          // Upload the image as a base64 string
-          // const snapshot = await avatarRef.putString(avatar.base64, "base64");
+          const response = await fetch(avatar.uri);
 
-          // const _snapshot = new Uint8Array([
-          //   0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x77, 0x6f, 0x72, 0x6c,
-          //   0x64, 0x21,
-          // ]);
-          // uploadBytes(avatarRef, _snapshot).then((snapshot) => {
-          //   console.log("Uploaded an array!");
-          //   console.log(snapshot);
-          //   const downloadURL = await _snapshot.ref.getDownloadURL();
+          if (response.ok) {
+            const blob = await response.blob();
+            const uploadTask = uploadBytesResumable(avatarRef, blob);
+
+            uploadTask.on(
+              "state_changed",
+              (snapshot) => {
+                // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                const progress =
+                  (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                console.log("Upload is " + progress + "% done");
+                switch (snapshot.state) {
+                  case "paused":
+                    console.log("Upload is paused");
+                    break;
+                  case "running":
+                    console.log("Upload is running");
+                    break;
+                }
+              },
+              (error) => {
+                // this.setState({ isLoading: false })
+                // dispatch(setLoading())
+                // A full list of error codes is available at
+                // https://firebase.google.com/docs/storage/web/handle-errors
+                switch (error.code) {
+                  case "storage/unauthorized":
+                    console.log(
+                      "User doesn't have permission to access the object"
+                    );
+                    break;
+                  case "storage/canceled":
+                    console.log("User canceled the upload");
+                    break;
+                  case "storage/unknown":
+                    console.log(
+                      "Unknown error occurred, inspect error.serverResponse"
+                    );
+                    break;
+                }
+              },
+              () => {
+                // Upload completed successfully, now we can get the download URL
+                getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+                  console.log("File available at", downloadURL);
+
+                  //perform your task
+                  avatar.uri = downloadURL;
+
+                  updateDoc(userRef, {
+                    avatar: avatar,
+                  });
+
+                  const updatedUserData = {
+                    ...userData,
+                    avatar: {
+                      ...avatar,
+                      uri: downloadURL,
+                    },
+                  };
+
+                  dispatch(setUserData(updatedUserData));
+                });
+              }
+            );
+          }
+
+          // const blob = await new Promise((resolve, reject) => {
+          //   const xhr = new XMLHttpRequest();
+          //   xhr.onload = function () {
+          //     resolve(xhr.response);
+          //   };
+          //   xhr.onerror = function (e) {
+          //     console.log(e);
+          //     reject(new TypeError("Network request failed"));
+          //   };
+          //   xhr.responseType = "blob";
+          //   xhr.open("GET", avatar.uri, true);
+          //   xhr.send(null);
           // });
 
-          // const response = await fetch(avatar.uri);
-          // const blob = await response.blob();
+          // console.log(blob);
+          // try {
+          //   await uploadBytes(avatarRef, blob).then((snapshot) => {
+          //     console.log("Uploaded: ", snapshot);
+          //     getDownloadURL(snapshot.ref).then((downloadURL) => {
+          //       console.log("Download link to file", downloadURL);
+          //       avatar.uri = downloadURL;
+          //       updateDoc(userRef, {
+          //         avatar: avatar,
+          //       });
+          //     });
+          //   });
+          // } catch (e) {
+          //   console.log("Error uploading image", e);
+          // }
+          // blob.close();
 
-          const blob = await new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onload = function () {
-              resolve(xhr.response);
-            };
-            xhr.onerror = function (e) {
-              console.log(e);
-              reject(new TypeError("Network request failed"));
-            };
-            xhr.responseType = "blob";
-            xhr.open("GET", avatar.uri, true);
-            xhr.send(null);
-          });
+          // // await uploadBytes(avatarRef, blob);
 
-          console.log(blob);
-          try {
-            await uploadBytes(avatarRef, blob).then((snapshot) => {
-              console.log("Uploaded: ", snapshot);
-              getDownloadURL(snapshot.ref).then((downloadURL) => {
-                console.log("Download link to file", downloadURL);
-                avatar.uri = downloadURL;
-                updateDoc(userRef, {
-                  avatar: avatar,
-                });
-              });
-            });
-          } catch (e) {
-            console.log("Error uploading image", e);
-          }
-          blob.close();
+          // // const downloadURL = await getDownloadURL(avatarRef);
 
-          // await uploadBytes(avatarRef, blob);
+          // // console.log(`DOWNLOAD URL: ${downloadURL}`);
 
-          // const downloadURL = await getDownloadURL(avatarRef);
+          // // const uploadTask = uploadBytesResumable(avatarRef, avatar);
 
-          // console.log(`DOWNLOAD URL: ${downloadURL}`);
+          // // Get the download URL for the uploaded image
+          // // const downloadURL = await _snapshot.ref.getDownloadURL();
 
-          // const uploadTask = uploadBytesResumable(avatarRef, avatar);
+          // // Update the userData with the download URL
+          // const updatedUserData = {
+          //   ...userData,
+          //   avatar: {
+          //     ...avatar,
+          //     uri: downloadURL,
+          //   },
+          // };
 
-          // Get the download URL for the uploaded image
-          // const downloadURL = await _snapshot.ref.getDownloadURL();
-
-          // Update the userData with the download URL
-          const updatedUserData = {
-            ...userData,
-            avatar: {
-              ...avatar,
-              uri: downloadURL,
-            },
-          };
-
-          dispatch(setUserData(updatedUserData));
+          // dispatch(setUserData(updatedUserData));
         }
       } catch (error) {
         dispatch(setError("Error saving user data"));
