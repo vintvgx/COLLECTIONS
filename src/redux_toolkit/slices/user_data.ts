@@ -185,8 +185,6 @@ export const fetchUserData = () => async (dispatch: AppDispatch) => {
         const userData = userSnapshot.data() as UserData;
 
         dispatch(setUserData(userData));
-        console.log("working" + userData.firstName);
-        console.log("avatar?" + userData.avatar.uri);
       } else {
         dispatch(setUserData(initialState));
         console.log("not working");

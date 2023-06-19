@@ -58,7 +58,7 @@ export const addCollectionData =
     const user = auth.currentUser;
 
     if (user) {
-      const { title, images } = dataState;
+      const { title, image } = dataState;
 
       // const collectionRef = `collections/${user?.uid}/filenames`
       const collectionRef = doc(
@@ -73,7 +73,7 @@ export const addCollectionData =
           id: title,
         });
         console.log("FILENAME ADDED");
-        for (const item of images) {
+        for (const item of image) {
           const img_firestore_ref = doc(
             db,
             "collections",

@@ -15,15 +15,15 @@ export interface ImageData {
   // base64?: null;
   // duration?: null;
   // exif?: null;
-  title: string;
+  title?: string;
   fileName: string;
   fileSizE: number;
   height: number;
   type: string;
   uri: string;
   width: number;
-  time: string;
-  date: string;
+  time?: string;
+  date?: string;
 }
 
 export interface ImageCollectionData {

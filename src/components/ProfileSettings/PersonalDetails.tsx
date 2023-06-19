@@ -24,8 +24,8 @@ interface ProfileSettingsProps extends ProfileUser {}
 
 const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
   const dispatch = useDispatch();
-
   const navigation = useNavigation();
+  const currentDateTime = new Date();
 
   const handleBack = () => {
     navigation.goBack(); // Navigates back to the previous screen
@@ -121,15 +121,17 @@ const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
       console.log(selectedImage);
       const updatedAvatar = {
         assetId: selectedImage.assetId,
-        base64: selectedImage.base64,
-        duration: selectedImage.duration,
-        exif: selectedImage.exif,
+        // base64: selectedImage.base64,
+        // duration: selectedImage.duration,
+        // exif: selectedImage.exif,
         fileName: selectedImage.fileName,
         fileSize: selectedImage.fileSize,
         height: selectedImage.height,
         type: selectedImage.type,
         uri: selectedImage.uri,
         width: selectedImage.width,
+        time: currentDateTime.toLocaleTimeString(),
+        date: currentDateTime.toLocaleDateString(),
       };
 
       console.log(`UPDATED AVATAR: ${updatedAvatar}`);
