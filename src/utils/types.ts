@@ -11,21 +11,25 @@ export interface DataState {
 
 export interface ImageData {
   assetId: string;
-  base64?: null;
-  duration?: null;
-  exif?: null;
+  id: number;
+  // base64?: null;
+  // duration?: null;
+  // exif?: null;
+  title: string;
   fileName: string;
   fileSizE: number;
   height: number;
   type: string;
   uri: string;
   width: number;
+  time: string;
+  date: string;
 }
 
 export interface ImageCollectionData {
-  images: ImageData[];
-  imgUri: string;
+  image: ImageData[];
   title: string;
+  date: string;
 }
 
 // create instance of user.id + collection of images

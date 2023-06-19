@@ -31,9 +31,10 @@ const initialState: ProfileUser = {
     bio: "",
     avatar: {
       assetId: "",
-      base64: null,
-      duration: null,
-      exif: null,
+      title: "",
+      id: 0,
+      time: "null",
+      date: "null",
       fileName: "",
       fileSizE: 2,
       height: 2,

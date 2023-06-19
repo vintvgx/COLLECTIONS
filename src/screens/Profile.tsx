@@ -107,7 +107,9 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
     : [];
 
   const renderItem = ({ item, index }: any) => {
-    console.log(`INDEX: ${item.key}`);
+    // console.log(`INDEX: ${item.key}`);
+    // console.log(item.uri);
+    // console.log("ITEM:", item);
     return (
       <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
         <View
@@ -118,7 +120,7 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
             },
           ]}>
           <Image
-            source={{ uri: item.imgUri }}
+            source={{ uri: item.image.uri }}
             style={{
               height: item.randomBool ? 150 : 280,
               alignSelf: "stretch",

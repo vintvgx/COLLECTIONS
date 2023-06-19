@@ -62,7 +62,7 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
     const collectionsData = await Promise.all(
       filenames.map(async (file) => {
         const collectionRef = `collections/${user}/files/${file}/images`;
-        console.log(collectionRef);
+        // console.log(collectionRef);
 
         const fetchCollections = await getDocs(
           await collection(db, collectionRef)
@@ -70,6 +70,7 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
         const userImageCollection: ImageCollectionData[] = [];
 
         fetchCollections.forEach((collection) => {
+          console.log(collection.data());
           const collection_images = collection.data().images;
           // console.log(collection_images);
           const uri = collection.data().imgUri;
@@ -77,9 +78,9 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
           const title = collection.data().title;
           // console.log(title);
           userImageCollection.push({
-            images: collection_images,
-            imgUri: uri,
-            title,
+            image: collection.data(),
+            date: collection.data().date,
+            title: collection.data().title,
           });
         });
         dispatch(setCollectionData(userImageCollection));

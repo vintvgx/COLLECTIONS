@@ -33,7 +33,7 @@ const Create: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
   const [imageCount, setImageCount] = useState(0);
-  const uploadTime = new Date().toLocaleTimeString(); // or use any suitable format
+  const currentDateTime = new Date();
   const dispatch = useDispatch();
 
   // const navigation = useNavigation();
@@ -41,9 +41,9 @@ const Create: React.FC = () => {
   //   useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const [data, setCollectionData] = useState<ImageCollectionData>({
-    images: images,
-    imgUri: "fix",
+    image: images,
     title: collectionTitle,
+    date: currentDateTime.toLocaleString(),
   });
 
   useEffect(() => {
@@ -106,9 +106,15 @@ const Create: React.FC = () => {
 
     try {
       const dataState: ImageCollectionData = {
-        images,
-        imgUri: "fix",
+        image: images.map((image, index) => ({
+          ...image,
+          id: index,
+          title: collectionTitle,
+          time: currentDateTime.toLocaleTimeString(),
+          date: currentDateTime.toLocaleDateString(),
+        })),
         title: collectionTitle,
+        date: currentDateTime.toLocaleString(),
       };
 
       if (collectionTitle == "") {
@@ -253,7 +259,10 @@ const Create: React.FC = () => {
                   Image Count: {imageCount}
                 </Text>
                 <Text style={styles.modalSubtitle}>
-                  Upload Time: {uploadTime}
+                  Date: {currentDateTime.toLocaleDateString()}
+                </Text>
+                <Text style={styles.modalSubtitle}>
+                  Time: {currentDateTime.toLocaleTimeString()}
                 </Text>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity

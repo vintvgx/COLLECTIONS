@@ -9,9 +9,14 @@ import {
 } from "firebase/firestore";
 import { auth, db, storage } from "../../firebase/f9_config";
 import { ImageCollectionData, DataState, Collections } from "../../utils/types";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import {
+  getDownloadURL,
+  ref,
+  uploadBytes,
+  uploadBytesResumable,
+} from "firebase/storage";
 
-//initial state
+//initial state state of slice
 const initialState: DataState = {
   userId: null,
   filenames: [],
@@ -21,6 +26,12 @@ const initialState: DataState = {
   collectionCovers: [],
 };
 
+/**
+ * Slice Navigation
+ *
+ * uploadCollectionData - takes actions and dispatches the the data be concatted
+ *
+ */
 const addCollectionSlice = createSlice({
   name: "addCollection",
   initialState,
@@ -57,10 +68,11 @@ export const addCollectionData =
       );
 
       try {
+        console.log("TOP");
         await setDoc(collectionRef, {
           id: title,
         });
-
+        console.log("FILENAME ADDED");
         for (const item of images) {
           const img_firestore_ref = doc(
             db,
@@ -78,121 +90,111 @@ export const addCollectionData =
           );
 
           await setDoc(img_firestore_ref, item);
+          console.log("REACHED IMAGE REF ADD:", item.fileName);
           try {
             const response = await fetch(item.uri);
+            console.log("Reached response: ", response);
             if (response.ok) {
               const blob = await response.blob();
+              console.log("Reached blob: ", blob);
+
+              //* CODE FOR uploadBytesResumable
+              const uploadTask = uploadBytesResumable(img_storage_ref, blob);
+
+              // Listen for state changes, errors, and completion of the upload.
+              uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                  // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+                  const progress =
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                  console.log("Upload is " + progress + "% done");
+                  switch (snapshot.state) {
+                    case "paused":
+                      console.log("Upload is paused");
+                      break;
+                    case "running":
+                      console.log("Upload is running");
+                      break;
+                  }
+                },
+                (error) => {
+                  // this.setState({ isLoading: false })
+                  // dispatch(setLoading())
+                  // A full list of error codes is available at
+                  // https://firebase.google.com/docs/storage/web/handle-errors
+                  switch (error.code) {
+                    case "storage/unauthorized":
+                      console.log(
+                        "User doesn't have permission to access the object"
+                      );
+                      break;
+                    case "storage/canceled":
+                      console.log("User canceled the upload");
+                      break;
+                    case "storage/unknown":
+                      console.log(
+                        "Unknown error occurred, inspect error.serverResponse"
+                      );
+                      break;
+                  }
+                },
+                () => {
+                  // Upload completed successfully, now we can get the download URL
+                  getDownloadURL(uploadTask.snapshot.ref).then(
+                    (downloadURL) => {
+                      console.log("File available at", downloadURL);
+                      //perform your task
+                      item.uri = downloadURL;
+
+                      updateDoc(img_firestore_ref, {
+                        uri: item.uri,
+                      });
+
+                      // const updatedCollectionData = {
+                      //   item,
+                      //   title,
+                      //   date
+                      // };
+
+                      dispatch(uploadCollectionData([item]));
+                      console.log("\n\nDISPATCHED:", item.fileName);
+                    }
+                  );
+                }
+              );
+
+              //* CODE FOR uploadBytes
               // Rest of the code
-              const snapshot = await uploadBytes(img_storage_ref, blob);
-              console.log("Image Uploaded: ", snapshot);
+              // const snapshot = await uploadBytes(img_storage_ref, blob);
+              // console.log("Reached SNAPSHOT -> Image Uploaded: ", snapshot);
 
-              const downloadURL = await getDownloadURL(snapshot.ref);
-              console.log("Download link to file", downloadURL);
-              item.uri = downloadURL;
+              // const downloadURL = await getDownloadURL(snapshot.ref);
+              // console.log("Download link to file", downloadURL);
+              // item.uri = downloadURL;
 
-              await updateDoc(img_firestore_ref, {
-                uri: item.uri,
-              });
-              const updatedCollectionData = {
-                item,
-                imgURI: item.uri,
-                title,
-              };
+              // await updateDoc(img_firestore_ref, {
+              //   uri: item.uri,
+              // });
+              // const updatedCollectionData = {
+              //   item,
+              //   imgURI: item.uri,
+              //   title,
+              // };
 
-              dispatch(uploadCollectionData([updatedCollectionData]));
+              // dispatch(uploadCollectionData([updatedCollectionData]));
+              // console.log("\n\nDISPATCHED:", item.fileName);
             } else {
-              throw new Error("Failed to fetch the image");
+              throw new Error("Failed to fetch the image uri");
             }
           } catch (error) {
-            console.log("Error fetching the image:", error);
+            console.log("Error uploading images:", error);
           }
         }
-        //   // const blob = await new Promise((resolve, reject) => {
-        //   //   const xhr = new XMLHttpRequest();
-        //   //   xhr.onload = function () {
-        //   //     resolve(xhr.response);
-        //   //   };
-        //   //   xhr.onerror = function (e) {
-        //   //     console.log(e);
-        //   //     reject(new TypeError("Network request failed"));
-        //   //   };
-        //   //   xhr.responseType = "blob";
-        //   //   xhr.open("GET", item.uri, true);
-        //   //   xhr.send(null);
-        //   // });
-
-        //   const snapshot = await uploadBytes(img_storage_ref, blob);
-        //   console.log("Image Uploaded: ", snapshot);
-
-        //   const downloadURL = await getDownloadURL(snapshot.ref);
-        //   console.log("Download link to file", downloadURL);
-        //   item.uri = downloadURL;
-
-        //   await updateDoc(img_firestore_ref, {
-        //     uri: item.uri,
-        //   });
-
-        //   blob.close();
-
-        //   const updatedCollectionData = {
-        //     item,
-        //     imgURI: item.uri,
-        //     title,
-        //   };
-
-        //   dispatch(uploadCollectionData([updatedCollectionData]));
-        // }
       } catch {
         console.log("error");
       }
     }
   };
 
-// export const selectaddCollection = (state: RootState) => state.addCollection;
-
 export default addCollectionSlice.reducer;
-
-// export const blah = createSlice({
-//     name: 'collection',
-//     initialState: {},
-//     reducers: {
-//       addCollection: async (state, action) => {
-//         const { images, collectionTitle } = action.payload;
-//         const user = auth.currentUser;
-
-//         // Create a new collection document in Firestore
-//         const collectionRef = `collections/${user?.uid}/filenames`
-//         try {
-//             await setDoc(collectionRef, )
-//         }
-//         // const collectionRef = await db.collection('collections').add({
-//         //   title: collectionTitle,
-//         //   userId: user,
-//         //   uploadTime: new Date().toLocaleTimeString(),
-//         // });
-
-//         const collectionId = collectionRef.id;
-
-//         // Store the image filenames in Firestore
-//         const filenamesRef = db.collection(`collections/${user}/filenames`).doc();
-//         await filenamesRef.set({ collectionId });
-
-//         // Upload the images to Firebase Storage and update Firestore with download URLs
-//         const storagePromises = images.map(async (image) => {
-//           const imageRef = storage.child(`collections/${collectionId}/images/${image.uri}`);
-//           await imageRef.put(image.uri);
-//           const downloadURL = await imageRef.getDownloadURL();
-
-//           await db
-//             .collection(`collections/${user}/files/${collectionId}/images`)
-//             .add({ downloadURL });
-//         });
-
-//         await Promise.all(storagePromises);
-//       },
-//     },
-//   });
-
-//   export const { addCollection } = collectionSlice.actions;
-
-//   export default collectionSlice.reducer;
