@@ -4,6 +4,7 @@ export interface DataState {
   userId: null;
   filenames: string[];
   collectionsData: ImageCollectionData[] | undefined;
+  feedData: ImageCollectionData[] | undefined;
   isLoading: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
@@ -24,6 +25,7 @@ export interface ImageData {
   width: number;
   time?: string;
   date?: string;
+  uid?: string;
 }
 
 export interface ImageCollectionData {

@@ -8,6 +8,7 @@ import { ImageCollectionData, DataState, Collections } from "../../utils/types";
 const initialState: DataState = {
   userId: null,
   filenames: [],
+  feedData: [],
   collectionsData: [],
   isLoading: false,
   error: null,

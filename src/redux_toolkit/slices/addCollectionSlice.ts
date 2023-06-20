@@ -40,6 +40,9 @@ const addCollectionSlice = createSlice({
       state.collectionsData = state.collectionsData?.concat(action.payload);
       (state.isLoading = false), (state.error = null);
     },
+    uploadCollectionToFeed: (state, action: PayloadAction<any[]>) => {
+      state.collectionsData = state.collectionsData?.concat(action.payload);
+    },
     setLoading: (state) => {
       (state.isLoading = true), (state.error = null);
     },
@@ -49,8 +52,12 @@ const addCollectionSlice = createSlice({
   },
 });
 
-export const { uploadCollectionData, setLoading, setError } =
-  addCollectionSlice.actions;
+export const {
+  uploadCollectionData,
+  setLoading,
+  setError,
+  uploadCollectionToFeed,
+} = addCollectionSlice.actions;
 
 export const addCollectionData =
   (dataState: ImageCollectionData) =>
@@ -66,13 +73,21 @@ export const addCollectionData =
         `collections/${user?.uid}/filenames`,
         title
       );
+      const FEED_FILENAMES_REF = doc(db, `feed/allUsers/filenames`, title);
 
       try {
+        //TODO: REMOVE COMMENTS / uploadResumableBytes fixed app crash
         console.log("TOP");
         await setDoc(collectionRef, {
           id: title,
         });
+        await setDoc(FEED_FILENAMES_REF, {
+          id: title,
+        });
         console.log("FILENAME ADDED");
+
+        // const FEED_FILENAMES_REF = doc(db, `feed/allUsers/filenames` )
+
         for (const item of image) {
           const img_firestore_ref = doc(
             db,
@@ -84,12 +99,18 @@ export const addCollectionData =
             item.fileName
           );
 
+          const FEED_IMAGES_REF = doc(
+            db,
+            `feed/filenames/${dataState.title}/images`
+          );
+
           const img_storage_ref = ref(
             storage,
             `images/${user.uid}/${title}/${item.fileName}`
           );
 
           await setDoc(img_firestore_ref, item);
+          // await setDoc(FEED_IMAGES_REF, item);
           console.log("REACHED IMAGE REF ADD:", item.fileName);
           try {
             const response = await fetch(item.uri);
@@ -149,6 +170,12 @@ export const addCollectionData =
 
                       updateDoc(img_firestore_ref, {
                         uri: item.uri,
+                        uid: user.uid,
+                      });
+
+                      setDoc(FEED_IMAGES_REF, {
+                        ...item,
+                        uid: user.uid,
                       });
 
                       // const updatedCollectionData = {
