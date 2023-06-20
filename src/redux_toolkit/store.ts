@@ -2,6 +2,7 @@ import { Action, configureStore } from "@reduxjs/toolkit";
 import filenamesReducer from "./slices/filenameSlice";
 import userDataReducer from "./slices/user_data";
 import addCollectionReducer from "./slices/addCollectionSlice";
+import feedReducer from "./slices/retrieveFeedSlice";
 import thunkmiddleware, { ThunkAction } from "redux-thunk";
 import { useDispatch, TypedUseSelectorHook, useSelector } from "react-redux";
 
@@ -10,6 +11,7 @@ export const store = configureStore({
     filenames: filenamesReducer,
     userData: userDataReducer,
     addCollection: addCollectionReducer,
+    feed: feedReducer,
   },
 });
 

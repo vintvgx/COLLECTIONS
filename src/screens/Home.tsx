@@ -10,25 +10,39 @@ import {
   selectCollectionData,
   selectFilenames,
 } from "../redux_toolkit/slices/filenameSlice";
+import { ImageCollectionData } from "../utils/types";
+import { useAppSelector } from "../redux_toolkit";
+import { fetchFeedData } from "../redux_toolkit/slices/retrieveFeedSlice";
 
 interface ImagesProps {
   OnSetFilenames: Function;
   OnSetCovers: Function;
 }
 
+interface FeedProps {
+  feedData: ImageCollectionData;
+}
+
 const _Home: React.FC<ImagesProps> = ({ OnSetFilenames }) => {
   const dispatch = useDispatch();
-  const filenames = useSelector(selectFilenames);
-  const collections = useSelector(selectCollectionData);
+  const { feedData } = useAppSelector(({ feed }) => feed);
 
   useEffect(() => {
-    async function fetch() {
-      const result = await dispatch(fetchFilenames());
-    }
-    fetch();
-    console.log("HOME filenames: ", filenames);
-    console.log("Collections: ", collections);
+    //@ts-ignore
+    dispatch(fetchFeedData());
+    console.log("FEEED", feedData);
   }, [dispatch]);
+  // const filenames = useSelector(selectFilenames);
+  // const collections = useSelector(selectCollectionData);
+
+  // useEffect(() => {
+  //   async function fetch() {
+  //     const result = await dispatch(fetchFilenames());
+  //   }
+  //   fetch();
+  //   console.log("HOME filenames: ", filenames);
+  //   console.log("Collections: ", collections);
+  // }, [dispatch]);
 
   return (
     <View style={styles.container}>

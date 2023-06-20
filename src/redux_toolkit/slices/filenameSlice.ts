@@ -71,7 +71,7 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
         const userImageCollection: ImageCollectionData[] = [];
 
         fetchCollections.forEach((collection) => {
-          console.log(collection.data());
+          // console.log(collection.data());
           const collection_images = collection.data().images;
           // console.log(collection_images);
           const uri = collection.data().imgUri;

@@ -20,6 +20,7 @@ import {
 const initialState: DataState = {
   userId: null,
   filenames: [],
+  feedData: [],
   collectionsData: [],
   isLoading: false,
   error: null,
@@ -101,7 +102,7 @@ export const addCollectionData =
 
           const FEED_IMAGES_REF = doc(
             db,
-            `feed/filenames/${dataState.title}/images`
+            `feed/allUsers/files/${dataState.title}/images/${item.fileName}`
           );
 
           const img_storage_ref = ref(
@@ -110,7 +111,7 @@ export const addCollectionData =
           );
 
           await setDoc(img_firestore_ref, item);
-          // await setDoc(FEED_IMAGES_REF, item);
+          await setDoc(FEED_IMAGES_REF, item);
           console.log("REACHED IMAGE REF ADD:", item.fileName);
           try {
             const response = await fetch(item.uri);
@@ -173,8 +174,8 @@ export const addCollectionData =
                         uid: user.uid,
                       });
 
-                      setDoc(FEED_IMAGES_REF, {
-                        ...item,
+                      updateDoc(FEED_IMAGES_REF, {
+                        uri: item.uri,
                         uid: user.uid,
                       });
 
@@ -218,8 +219,8 @@ export const addCollectionData =
             console.log("Error uploading images:", error);
           }
         }
-      } catch {
-        console.log("error");
+      } catch (error) {
+        console.log(error);
       }
     }
   };

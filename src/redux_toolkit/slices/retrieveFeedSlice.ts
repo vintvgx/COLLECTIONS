@@ -1,7 +1,7 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import { collection, doc, getDocs } from "firebase/firestore";
-import { DataState, ImageData } from "../../utils/types";
+import { DataState, ImageCollectionData, ImageData } from "../../utils/types";
 import { db } from "../../firebase/f9_config";
 
 // Initial state of the feed slice
@@ -20,7 +20,7 @@ const feedSlice = createSlice({
   initialState,
   reducers: {
     setFeedData: (state, action: PayloadAction<any[]>) => {
-      state.feedData = action.payload;
+      state.feedData = state.feedData?.concat(action.payload);
       state.isLoading = false;
       state.error = null;
     },
@@ -46,22 +46,49 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
     );
 
     const filenames = feedFilenamesQuerySnapshot.docs.map((doc) => doc.id);
-    const feedData: ImageData[] = [];
 
-    for (const filename of filenames) {
-      const imagesQuerySnapshot = await getDocs(
-        collection(db, "feed", "filenames", filename, "images")
-      );
+    const feedImageCollection: ImageCollectionData[] = [];
 
-      imagesQuerySnapshot.docs.forEach((doc) => {
-        const imageData: ImageData = doc.data() as ImageData;
-        feedData.push(imageData);
-      });
-    }
+    console.log("FEED FILENAMES:", filenames);
 
-    dispatch(setFeedData(feedData));
+    const feedData = await Promise.all(
+      filenames.map(async (file) => {
+        const imgRef = `feed/allUsers/files/${file}/images`;
+
+        const fetchFeedCollections = await getDocs(
+          await collection(db, imgRef)
+        );
+
+        fetchFeedCollections.forEach((item) => {
+          console.log(item.data());
+          feedImageCollection.push({
+            image: item.data(),
+            title: item.data().title,
+            date: item.data().date,
+          });
+        });
+        dispatch(setFeedData(feedImageCollection));
+        // console.log("FEEDIMAGECOLLREADS: ", feedImageCollection);
+      })
+    );
+
+    // const feedData: ImageData[] = [];
+
+    // for (const filename of filenames) {
+    //   const imagesQuerySnapshot = await getDocs(
+    //     collection(db, "feed", "filenames", filename, "images")
+    //   );
+
+    //   imagesQuerySnapshot.docs.forEach((doc) => {
+    //     const imageData: ImageData = doc.data() as ImageData;
+    //     feedData.push(imageData);
+    //   });
+    // }
+
+    // dispatch(setFeedData(feedData));
   } catch (error) {
-    dispatch(setError(error.message));
+    dispatch(setError("Error"));
+    console.log("Error uploading images:", error);
   }
 };
 
