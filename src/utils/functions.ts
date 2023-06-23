@@ -1,6 +1,4 @@
 import { ImageCollectionData } from "./types";
-import { useDispatch } from "react-redux";
-import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
 /**
  * Converts the collection data to be displayed in MasonryList
@@ -42,28 +40,8 @@ export const handleSaveButtonPress = (
   setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
   images: ImageData[]
 ) => {
-  const dispatch = useDispatch();
   console.log("save pressed");
-  // setCollectionTitle("");
-  // setImageCount(images.length);
-  // setShowModal(true);
-
-  if (images.length === 0) {
-    return;
-  }
-
-  try {
-    const dataState: ImageCollectionData = {
-      images,
-      title: collectionTitle,
-    };
-
-    await dispatch(addCollectionData(dataState));
-    setCollectionTitle("");
-    setImageCount(0);
-    setShowModal(false);
-    setImages([]);
-  } catch (error) {
-    console.log("Error:", error);
-  }
+  setCollectionTitle("");
+  setImageCount(images.length);
+  setShowModal(true);
 };

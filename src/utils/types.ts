@@ -8,6 +8,7 @@ export interface DataState {
   isLoading: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
+  feedCollectionCovers: ImageCollectionData[] | undefined;
 }
 
 export interface ImageData {

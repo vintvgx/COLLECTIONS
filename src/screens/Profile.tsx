@@ -33,25 +33,6 @@ export interface ProfileData {
   collectionData: ImageCollectionData[];
 }
 
-const CollectionCard: React.FC<{ item: ImageData }> = ({ item }) => {
-  const randomBool = useMemo(() => Math.random() < 0.5, []);
-  return (
-    <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
-      <View style={[{ marginLeft: item.height % 2 === 0 ? 0 : 12 }]}>
-        <Image
-          source={{ uri: item.uri }}
-          style={{
-            height: randomBool ? 150 : 280,
-            alignSelf: "stretch",
-          }}
-          resizeMode="cover"
-        />
-        <Text style={{ marginTop: 8 }}>{item.fileName}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
-
 const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   const dispatch = useAppDispatch();
 
@@ -66,12 +47,12 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   );
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  useEffect(() => {
-    //@ts-ignore
-    dispatch(fetchFilenames());
-    dispatch(fetchUserData());
-    console.log("AVATAR?" + avatar?.uri);
-  }, [dispatch]);
+  // useEffect(() => {
+  //   //@ts-ignore
+  //   dispatch(fetchFilenames());
+  //   dispatch(fetchUserData());
+  //   console.log("AVATAR?" + avatar?.uri);
+  // }, [dispatch]);
 
   useEffect(() => {
     // @ts-ignore
@@ -89,22 +70,24 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
     return unsubscribe;
   }, [navigation, dispatch]);
 
-  const formattedData = collectionCovers
-    ? collectionCovers.map((item, index) => {
-        const width = Math.floor(Math.random() * 2) + 1; // Random width between 1 and 2
-        const height = Math.floor(Math.random() * 2) + 1; // Random height between 1 and 2
-        const randomBool = useMemo(() => Math.random() < 0.5, []);
+  const formattedData = useMemo(() => {
+    if (!collectionCovers) return [];
 
-        return {
-          id: index.toString(),
-          ...item,
-          width: width,
-          height: height,
-          randomBool: randomBool,
-          key: index,
-        };
-      })
-    : [];
+    return collectionCovers.map((item, index) => {
+      const width = Math.floor(Math.random() * 2) + 1;
+      const height = Math.floor(Math.random() * 2) + 1;
+      const randomBool = Math.random() < 0.5;
+
+      return {
+        id: index.toString(),
+        ...item,
+        width: width,
+        height: height,
+        randomBool: randomBool,
+        key: index,
+      };
+    });
+  }, [collectionCovers]);
 
   const renderItem = ({ item, index }: any) => {
     // console.log(`INDEX: ${item.key}`);
@@ -213,7 +196,7 @@ const styles = StyleSheet.create({
     // fontSize: 17,
     // fontWeight: "700",
     textAlign: "left",
-    fontFamily: "Inter",
+    // fontFamily: "Inter",
     fontStyle: "normal",
     fontWeight: "500",
     fontSize: 16,
@@ -223,7 +206,7 @@ const styles = StyleSheet.create({
     color: "rgba(255, 255, 255, 0.88)",
   },
   views: {
-    fontFamily: "Inter",
+    // fontFamily: "Inter",
     fontStyle: "normal",
     fontWeight: "500",
     fontSize: 10,

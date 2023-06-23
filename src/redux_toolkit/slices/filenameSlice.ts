@@ -13,6 +13,7 @@ const initialState: DataState = {
   isLoading: false,
   error: null,
   collectionCovers: [],
+  feedCollectionCovers: [],
 };
 
 // slice/reducer

@@ -13,6 +13,7 @@ const initialState: DataState = {
   isLoading: false,
   error: null,
   collectionCovers: [],
+  feedCollectionCovers: [],
 };
 
 const feedSlice = createSlice({
@@ -23,6 +24,9 @@ const feedSlice = createSlice({
       state.feedData = state.feedData?.concat(action.payload);
       state.isLoading = false;
       state.error = null;
+    },
+    setFeedCollectionCovers: (state, action: PayloadAction<any[]>) => {
+      state.feedCollectionCovers = action.payload;
     },
     setLoading: (state) => {
       state.isLoading = true;
@@ -35,24 +39,24 @@ const feedSlice = createSlice({
   },
 });
 
-export const { setFeedData, setLoading, setError } = feedSlice.actions;
+export const { setFeedData, setFeedCollectionCovers, setLoading, setError } =
+  feedSlice.actions;
 
 export const fetchFeedData = () => async (dispatch: AppDispatch) => {
   dispatch(setLoading());
-
   try {
     const feedFilenamesQuerySnapshot = await getDocs(
       collection(db, "feed", "allUsers", "filenames")
     );
 
-    const filenames = feedFilenamesQuerySnapshot.docs.map((doc) => doc.id);
+    const filenames = await Promise.all(
+      feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
+    );
 
-    const feedImageCollection: ImageCollectionData[] = [];
-
-    console.log("FEED FILENAMES:", filenames);
-
-    const feedData = await Promise.all(
+    const feedCollectionData = await Promise.all(
       filenames.map(async (file) => {
+        const feedImageCollection: ImageCollectionData[] = [];
+
         const imgRef = `feed/allUsers/files/${file}/images`;
 
         const fetchFeedCollections = await getDocs(
@@ -67,25 +71,16 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
             date: item.data().date,
           });
         });
+
         dispatch(setFeedData(feedImageCollection));
-        // console.log("FEEDIMAGECOLLREADS: ", feedImageCollection);
+        return feedImageCollection;
       })
     );
 
-    // const feedData: ImageData[] = [];
-
-    // for (const filename of filenames) {
-    //   const imagesQuerySnapshot = await getDocs(
-    //     collection(db, "feed", "filenames", filename, "images")
-    //   );
-
-    //   imagesQuerySnapshot.docs.forEach((doc) => {
-    //     const imageData: ImageData = doc.data() as ImageData;
-    //     feedData.push(imageData);
-    //   });
-    // }
-
-    // dispatch(setFeedData(feedData));
+    const feedCollectionCovers = feedCollectionData.map(
+      (collection) => collection[0]
+    );
+    dispatch(setFeedCollectionCovers(feedCollectionCovers));
   } catch (error) {
     dispatch(setError("Error"));
     console.log("Error uploading images:", error);
