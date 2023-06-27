@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Image,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ButtonWithTitle } from "../components/ButtonWithTitle";
@@ -18,10 +19,19 @@ import {
   selectCollectionData,
   selectFilenames,
 } from "../redux_toolkit/slices/filenameSlice";
+
+import FastImage from "react-native-fast-image";
 import { ImageCollectionData } from "../utils/types";
 import { useAppSelector } from "../redux_toolkit";
 
-import { fetchFeedData } from "../redux_toolkit/slices/retrieveFeedSlice";
+import {
+  fetchFeedData,
+  setFeedCollectionCovers,
+  setFeedData,
+} from "../redux_toolkit/slices/retrieveFeedSlice";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { connectStorageEmulator } from "firebase/storage";
+import ProfileMain from "../components/ProfileMAIN";
 
 interface ImagesProps {
   OnSetFilenames: Function;
@@ -32,6 +42,8 @@ interface FeedProps {
   data: ImageCollectionData[];
 }
 
+let cachedFeedData: any[] | null = null;
+
 const _Home: React.FC<FeedProps> = ({ data }) => {
   const dispatch = useDispatch();
 
@@ -39,65 +51,98 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
 
   useEffect(() => {
-    //@ts-ignore
-    dispatch(fetchFeedData());
-    console.log("FEEED", feedData);
+    if (cachedFeedData) {
+      dispatch(setFeedData(cachedFeedData));
+      dispatch(
+        setFeedCollectionCovers(
+          cachedFeedData.map((collection) => collection[0])
+        )
+      );
+    } else {
+      //@ts-ignore
+      dispatch(fetchFeedData());
+    }
   }, [dispatch]);
-  // const filenames = useSelector(selectFilenames);
-  // const collections = useSelector(selectCollectionData);
 
-  // useEffect(() => {
-  //   async function fetch() {
-  //     const result = await dispatch(fetchFilenames());
-  //   }
-  //   fetch();
-  //   console.log("HOME filenames: ", filenames);
-  //   console.log("Collections: ", collections);
-  // }, [dispatch]);
+  // ...
+
+  useEffect(() => {
+    if (feedData) {
+      cachedFeedData = feedData;
+    }
+  }, [feedData]);
+
+  const calculateImageHeight = (
+    imageWidth: number,
+    imageHeight: number
+  ): number => {
+    const screenWidth = Dimensions.get("window").width;
+    const aspectRatio = imageWidth / imageHeight;
+    return screenWidth / aspectRatio;
+  };
 
   const renderItem = ({ item, index }: any) => {
-    // console.log(`INDEX: ${item.key}`);
-    // console.log(item.uri);
-    // console.log("ITEM:", item);
+    const calculatedHeight = calculateImageHeight(
+      item.image.width,
+      item.image.height
+    );
+    console.log(calculatedHeight);
+
     return (
-      <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
-        <View
-          style={[
-            {
-              marginLeft: item.index % 2 === 0 ? 0 : 10,
-              position: "relative",
-            },
-          ]}>
-          <Image
-            source={{ uri: item.image.uri }}
-            style={{
-              height: item.randomBool ? 150 : 280,
-              alignSelf: "stretch",
-            }}
-            resizeMode="cover"
-          />
-          <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              // backgroundColor: "rgba(0, 0, 0, 0.5)",
-              padding: 5,
-            }}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.views}>234 views</Text>
+      <View
+        key={item.assetId}
+        style={[{ marginTop: 12, flex: 1 }]}
+        style={{ margin: 10 }}>
+        <View>
+          <View style={styles.collectionCard}>
+            <TouchableOpacity
+              onPress={() => {
+                console.log(item);
+              }}>
+              <Image // Use FastImage instead of Image
+                source={{ uri: item.image.uri }}
+                style={{
+                  flex: 1,
+                  // width: undefined,
+                  height: calculatedHeight,
+                  alignSelf: "stretch",
+                }}
+                resizeMode={"contain"}
+              />
+            </TouchableOpacity>
+            <View style={{ flexDirection: "row" }}>
+              <View>
+                <Text style={styles.title}>{item.title}</Text>
+                <Text style={styles.views}>234 views</Text>
+              </View>
+
+              <View style={styles.navigation}>
+                {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
+              </View>
+            </View>
           </View>
         </View>
-      </TouchableOpacity>
+      </View>
     );
     // }
   };
 
   return (
     <ScrollView style={styles.container}>
-      <View>
+      <SafeAreaView>
+        <View style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
+          <Text style={{ alignSelf: "center", fontSize: 25, fontWeight: 700 }}>
+            COLLECTIONS
+          </Text>
+          {/* <Image
+            source={require("../../assets/LOGO.png")}
+            style={{ width: "100%" }}
+            resizeMode="center"
+          /> */}
+        </View>
+
         <FlatList data={feedCollectionCovers} renderItem={renderItem} />
-      </View>
+      </SafeAreaView>
       <View style={styles.body}>
         <ButtonWithTitle
           title="Sign Out"
@@ -118,6 +163,18 @@ const styles = StyleSheet.create({
     flex: 9,
     justifyContent: "center",
     alignItems: "center",
+  },
+  collectionCard: {
+    flex: 1,
+    marginBottom: 50,
+  },
+  title: {
+    // fontFamily: "Arial Black",
+    fontSize: 26,
+    fontWeight: "500",
+  },
+  views: {
+    fontSize: 15,
   },
 });
 

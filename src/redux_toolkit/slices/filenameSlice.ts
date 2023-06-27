@@ -56,6 +56,7 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
     const user = auth?.currentUser?.uid;
     const filenamesRef = collection(db, `collections/${user}/filenames`);
     const querySnapshot = await getDocs(filenamesRef);
+
     const filenames = await Promise.all(
       querySnapshot.docs.map((doc) => doc.id)
     );
