@@ -89,10 +89,7 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
     console.log(calculatedHeight);
 
     return (
-      <View
-        key={item.assetId}
-        style={[{ marginTop: 12, flex: 1 }]}
-        style={{ margin: 10 }}>
+      <View key={item.assetId}>
         <View>
           <View style={styles.collectionCard}>
             <TouchableOpacity
@@ -110,14 +107,23 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
                 resizeMode={"contain"}
               />
             </TouchableOpacity>
-            <View style={{ flexDirection: "row" }}>
-              <View>
+            <View
+              style={{ flexDirection: "row", justifyContent: "space-between" }}>
+              <View style={{ marginTop: 8, marginLeft: 5 }}>
                 <Text style={styles.title}>{item.title}</Text>
                 <Text style={styles.views}>234 views</Text>
               </View>
 
-              <View style={styles.navigation}>
+              <View
+                ///TODO align contents to be placaed both in the vertically centered
+                style={{
+                  flexDirection: "row",
+                  marginRight: 5,
+                  alignItems: "center",
+                }}>
                 {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
+                <Text style={{ color: "#777F88" }}>username</Text>
+                <TouchableOpacity style={styles.circle}></TouchableOpacity>
               </View>
             </View>
           </View>
@@ -166,15 +172,27 @@ const styles = StyleSheet.create({
   },
   collectionCard: {
     flex: 1,
-    marginBottom: 50,
+    marginBottom: 75,
   },
   title: {
     // fontFamily: "Arial Black",
     fontSize: 26,
-    fontWeight: "500",
+    fontWeight: "700",
   },
   views: {
     fontSize: 15,
+    color: "#777F88",
+  },
+  circle: {
+    width: 35,
+    height: 35,
+    borderRadius: 25,
+    backgroundColor: "#e6e6e6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 10,
+    // marginBottom: 10,
+    // marginTop: 15,
   },
 });
 
