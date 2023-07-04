@@ -32,6 +32,12 @@ const firebaseConfig = {
 //* Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
+// //* Enable offline persistence for Realtime Database
+// firebase.database().setPersistenceEnabled(true);
+
+// //* Enable offline persistence for Firestore
+// firebase.firestore().enablePersistence();
+
 //*  Cloud Firestore Exports
 export const auth = getAuth(app);
 export const db = getFirestore(app);

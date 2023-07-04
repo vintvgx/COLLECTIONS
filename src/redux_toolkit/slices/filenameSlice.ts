@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../../firebase/f9_config";

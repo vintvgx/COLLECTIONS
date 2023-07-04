@@ -15,6 +15,14 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeStack } from "./src/navigation/Navigation";
 import { RegisterStack } from "./src/navigation/Navigation";
 import { MAIN } from "./src/navigation/Navigation";
+import { LogBox } from "react-native";
+
+// Ignore specific warning messages
+// LogBox.ignoreLogs([
+//   "source.uri should not be an empty string",
+//   // Add more warning messages you want to ignore here
+// ]);
+LogBox.ignoreAllLogs();
 
 export default function App() {
   const [isLoggedIn, setisLoggedIn] = useState(false);
