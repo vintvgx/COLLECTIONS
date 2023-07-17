@@ -32,8 +32,8 @@ const filenameSlice = createSlice({
     setCollectionCovers: (state, action: PayloadAction<any[]>) => {
       state.collectionCovers = action.payload;
     },
-    setLoading: (state) => {
-      (state.isLoading = true), (state.error = null);
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      (state.isLoading = action.payload), (state.error = null);
     },
     setError: (state, action: PayloadAction<string>) => {
       (state.isLoading = false), (state.error = action.payload);
@@ -51,7 +51,7 @@ export const {
 } = filenameSlice.actions;
 
 export const fetchFilenames = () => async (dispatch: AppDispatch) => {
-  dispatch(setLoading());
+  dispatch(setLoading(true));
   try {
     const user = auth?.currentUser?.uid;
     const filenamesRef = collection(db, `collections/${user}/filenames`);
@@ -97,6 +97,7 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
     console.log(error);
     dispatch(setError("Error fetching filenames"));
   }
+  dispatch(setLoading(false));
 };
 
 export const selectFilenames = (state: RootState) => state.filenames.filenames;

@@ -36,6 +36,9 @@ export interface ProfileData {
 const Profile: React.FC<ProfileData> = ({ collectionData }) => {
   const dispatch = useAppDispatch();
 
+  // const {isLoading } = useAppSelector((state) => state.userData)
+  const { isLoading } = useAppSelector((state) => state.filenames);
+
   const navigation = useNavigation();
 
   const randomBool = useMemo(() => Math.random() < 0.5, []);
@@ -93,6 +96,14 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
     // console.log(`INDEX: ${item.key}`);
     // console.log(item.uri);
     // console.log("ITEM:", item);
+
+    if (!item || !item.image || !item.image.uri) {
+      // Handle empty or undefined item or item.image case
+      console.log("Rendertime NULL hit!");
+      return null;
+    }
+    console.log("rendering");
+
     return (
       <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
         <View
@@ -134,20 +145,25 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
       </View>
       <View style={styles.body}>
         <ScrollView style={{ marginTop: 25 }}>
-          <MasonryList
-            data={formattedData}
-            numColumns={2} // Specify the number of columns you want in the masonry view
-            keyExtractor={(item, index) => index.toString()}
-            renderItem={renderItem}
-            contentContainerStyle={{
-              paddingHorizontal: 24,
-              alignSelf: "stretch",
-            }}
-            onMomentumScrollEnd={(ev) => {
-              const index = Math.floor(ev.nativeEvent.contentOffset.x / width);
-              setCurrentIndex(index);
-            }}
-          />
+          {!isLoading && (
+            <MasonryList
+              data={formattedData}
+              numColumns={2}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={renderItem}
+              contentContainerStyle={{
+                paddingHorizontal: 24,
+                alignSelf: "stretch",
+              }}
+              onMomentumScrollEnd={(ev) => {
+                const index = Math.floor(
+                  ev.nativeEvent.contentOffset.x / width
+                );
+                setCurrentIndex(index);
+              }}
+            />
+          )}
+          {isLoading && <Text>Loading...</Text>}
         </ScrollView>
       </View>
     </SafeAreaView>

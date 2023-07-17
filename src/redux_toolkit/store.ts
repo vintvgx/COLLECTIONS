@@ -3,6 +3,7 @@ import filenamesReducer from "./slices/filenameSlice";
 import userDataReducer from "./slices/user_data";
 import addCollectionReducer from "./slices/addCollectionSlice";
 import feedReducer from "./slices/retrieveFeedSlice";
+import authReducer from "./slices/authSlice";
 import thunkmiddleware, { ThunkAction } from "redux-thunk";
 import { useDispatch, TypedUseSelectorHook, useSelector } from "react-redux";
 
@@ -12,6 +13,7 @@ export const store = configureStore({
     userData: userDataReducer,
     addCollection: addCollectionReducer,
     feed: feedReducer,
+    auth: authReducer,
   },
 });
 

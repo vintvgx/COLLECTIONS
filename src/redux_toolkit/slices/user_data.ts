@@ -54,8 +54,8 @@ const userDataSlice = createSlice({
     setUserData: (state, action: PayloadAction<UserData>) => {
       state.userData = action.payload;
     },
-    setLoading: (state) => {
-      state.isLoading = true;
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
       state.error = null;
     },
     setError: (state, action: PayloadAction<string>) => {
@@ -163,59 +163,6 @@ export const saveUserData =
               }
             );
           }
-
-          // const blob = await new Promise((resolve, reject) => {
-          //   const xhr = new XMLHttpRequest();
-          //   xhr.onload = function () {
-          //     resolve(xhr.response);
-          //   };
-          //   xhr.onerror = function (e) {
-          //     console.log(e);
-          //     reject(new TypeError("Network request failed"));
-          //   };
-          //   xhr.responseType = "blob";
-          //   xhr.open("GET", avatar.uri, true);
-          //   xhr.send(null);
-          // });
-
-          // console.log(blob);
-          // try {
-          //   await uploadBytes(avatarRef, blob).then((snapshot) => {
-          //     console.log("Uploaded: ", snapshot);
-          //     getDownloadURL(snapshot.ref).then((downloadURL) => {
-          //       console.log("Download link to file", downloadURL);
-          //       avatar.uri = downloadURL;
-          //       updateDoc(userRef, {
-          //         avatar: avatar,
-          //       });
-          //     });
-          //   });
-          // } catch (e) {
-          //   console.log("Error uploading image", e);
-          // }
-          // blob.close();
-
-          // // await uploadBytes(avatarRef, blob);
-
-          // // const downloadURL = await getDownloadURL(avatarRef);
-
-          // // console.log(`DOWNLOAD URL: ${downloadURL}`);
-
-          // // const uploadTask = uploadBytesResumable(avatarRef, avatar);
-
-          // // Get the download URL for the uploaded image
-          // // const downloadURL = await _snapshot.ref.getDownloadURL();
-
-          // // Update the userData with the download URL
-          // const updatedUserData = {
-          //   ...userData,
-          //   avatar: {
-          //     ...avatar,
-          //     uri: downloadURL,
-          //   },
-          // };
-
-          // dispatch(setUserData(updatedUserData));
         }
       } catch (error) {
         dispatch(setError("Error saving user data"));
@@ -224,7 +171,7 @@ export const saveUserData =
   };
 
 export const fetchUserData = () => async (dispatch: AppDispatch) => {
-  dispatch(setLoading());
+  dispatch(setLoading(true));
   const user = auth.currentUser;
   if (user) {
     try {
@@ -244,6 +191,7 @@ export const fetchUserData = () => async (dispatch: AppDispatch) => {
     } catch (error) {
       dispatch(setError("Error fetching user data"));
     }
+    dispatch(setLoading(false));
   }
 };
 

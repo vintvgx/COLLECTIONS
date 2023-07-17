@@ -1,9 +1,14 @@
-import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useAppSelector } from "../redux_toolkit";
+import { RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
+
+import { selectFeedLoading } from "../redux_toolkit/slices/retrieveFeedSlice";
+
 import CustomCachedImage from "../components/CustomCachedImage";
 import { calculateImageHeight } from "../utils/image";
+import CachedImage from "expo-cached-image";
 
 interface RenderItemProps {
   item: any;
@@ -11,7 +16,14 @@ interface RenderItemProps {
 
 const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   const dispatch = useDispatch();
-  const isLoading = useAppSelector((state) => state.feed.isLoading);
+
+  /**
+   * NOTE:
+   * By specifying the RootState type, TypeScript will correctly infer the type of the isLoading state
+   * from the Redux store, and the "'state' is of type 'unknown'" error should be resolved.
+   */
+  const isLoading = useSelector((state: RootState) => state.feed.isLoading);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const calculatedHeight = calculateImageHeight(
     item.image.width,
@@ -24,28 +36,46 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     (state) => state.userData.userData
   );
 
-  //   if (isLoading) {
-  //     return (
-  //       <View style={styles.loadingContainer}>
-  //         <Text>Loading</Text>
-  //       </View>
-  //     );
-  //   }
+  const handleImageLoadStart = () => {
+    setIsImageLoading(true);
+  };
 
+  const handleImageLoad = () => {
+    setIsImageLoading(false);
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Loading</Text>
+      </View>
+    );
+  }
+
+  //TODO Fix LOADING component when image is loading // handleImageLoad
+  //TODO: Convert back to CachedImage / look up file location set&get
   return (
     <View>
       <View style={styles.collectionCard}>
         <TouchableOpacity onPress={() => console.log(item)}>
-          <CustomCachedImage
+          {/* {isImageLoading ? (
+            <View style={styles.loadingContainer}>
+              <Text>Loading</Text>
+            </View>
+          ) : ( */}
+          <Image
             source={{ uri: item.image.uri }}
-            cacheKey={cacheKey}
+            // cachekey={cacheKey}
             style={{
               flex: 1,
               height: calculatedHeight,
               alignSelf: "stretch",
             }}
             resizeMode="contain"
+            onLoadStart={handleImageLoadStart}
+            onLoadEnd={handleImageLoad}
           />
+          {/* )} */}
         </TouchableOpacity>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ marginTop: 8, marginLeft: 5 }}>

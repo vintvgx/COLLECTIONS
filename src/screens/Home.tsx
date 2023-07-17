@@ -146,7 +146,7 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
       console.log("Error deleting cached data:", e);
     }
   };
-
+  // console.log("");
   const renderItem = ({ item, index }: any) => {
     const calculatedHeight = calculateImageHeight(
       item.image.width,
@@ -241,7 +241,11 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
           title="Sign Out"
           height={50}
           width={325}
-          onTap={userSignOut}
+          onTap={() => {
+            deleteAllCachedData();
+            deleteCachedData("cached_feed_data");
+            userSignOut();
+          }}
         />
       </View>
     </View>

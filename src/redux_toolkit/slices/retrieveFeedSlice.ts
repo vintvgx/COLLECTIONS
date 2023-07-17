@@ -30,7 +30,7 @@ const feedSlice = createSlice({
       state.feedCollectionCovers = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
-      state.isLoading = true;
+      state.isLoading = action.payload;
       state.error = null;
       console.log("STATE OF LOADING: ", state.isLoading);
     },
@@ -128,6 +128,7 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
     console.log("PUT IT IN ELSE!");
 
     dispatch(setLoading(false));
+    console.log("Fetch data completed"); // Add this line to check if the action is completed
   } catch (error) {
     dispatch(setError("Error"));
     console.log("Error uploading images:", error);
