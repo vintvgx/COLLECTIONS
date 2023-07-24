@@ -4,7 +4,7 @@ import {
   MaterialCommunityIcons,
   MaterialIcons,
 } from "@expo/vector-icons";
-import { Section } from "../utils/types";
+import { Section } from "../model/types";
 
 export const PROFILE_SETTINGS_SECTIONS: Section[] = [
   {

@@ -3,7 +3,6 @@ import {
   StyleSheet,
   Text,
   View,
-  FlatList,
   Image,
   ScrollView,
   Dimensions,
@@ -21,7 +20,7 @@ import { fetchUserData } from "../redux_toolkit/slices/user_data";
 
 import { convertDataForMasonryList } from "../utils/functions";
 
-import { ImageCollectionData, ImageData } from "../utils/types";
+import { ImageCollectionData, ImageData } from "../model/types";
 import ProfileMain from "../components/ProfileMAIN";
 import { useNavigation } from "@react-navigation/native";
 
@@ -102,7 +101,6 @@ const Profile: React.FC<ProfileData> = ({ collectionData }) => {
       console.log("Rendertime NULL hit!");
       return null;
     }
-    console.log("rendering");
 
     return (
       <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>

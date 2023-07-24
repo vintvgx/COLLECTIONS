@@ -8,7 +8,8 @@ import { selectFeedLoading } from "../redux_toolkit/slices/retrieveFeedSlice";
 
 import CustomCachedImage from "../components/CustomCachedImage";
 import { calculateImageHeight } from "../utils/image";
-import CachedImage from "expo-cached-image";
+// import CachedImage from "expo-cached-image";
+import CachedImage from "react-native-image-cache-wrapper";
 
 interface RenderItemProps {
   item: any;
@@ -72,8 +73,8 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
               alignSelf: "stretch",
             }}
             resizeMode="contain"
-            onLoadStart={handleImageLoadStart}
-            onLoadEnd={handleImageLoad}
+            // onLoadStrart={handleImageLoadStart}
+            // onLoadEnd={handleImageLoad}
           />
           {/* )} */}
         </TouchableOpacity>

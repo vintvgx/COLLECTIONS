@@ -1,5 +1,3 @@
-export interface User {}
-
 export interface DataState {
   userId: null;
   filenames: string[];
@@ -35,16 +33,9 @@ export interface ImageCollectionData {
   date: string;
 }
 
-// create instance of user.id + collection of images
 export interface Collections extends ImageCollectionData {
   collections: ImageCollectionData[];
 }
-
-// export interface ProfileUser {
-//   name: string;
-//   username: string;
-//   settings: [];
-// }
 
 export interface SectionItem {
   id: string;

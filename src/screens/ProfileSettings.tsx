@@ -11,12 +11,12 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { UserData, ProfileUser } from "../utils/types";
+import { UserData, ProfileUser } from "../model/types";
 import { PROFILE_SETTINGS_SECTIONS } from "../constants/ProfileSettings_Section";
 import { saveUserData, fetchUserData } from "../redux_toolkit/slices/user_data";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { Section, SectionItem } from "../utils/types";
+import { Section, SectionItem } from "../model/types";
 import { useAppSelector } from "../redux_toolkit";
 import { useNavigation } from "@react-navigation/native";
 

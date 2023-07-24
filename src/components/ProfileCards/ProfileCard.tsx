@@ -7,7 +7,7 @@ import {
   Image,
 } from "react-native";
 import React from "react";
-import { ImageCollectionData } from "../../utils/types";
+import { ImageCollectionData } from "../../model/types";
 
 interface ProfileCardProps {
   item: ImageCollectionData;

@@ -1,6 +1,5 @@
 import {
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -16,55 +15,26 @@ import { ApplicationState, OnSetFilenames, OnSetCovers } from "../redux";
 import { connect } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchUserData } from "../redux_toolkit/slices/user_data";
-
-import {
-  fetchFilenames,
-  selectCollectionData,
-  selectFilenames,
-} from "../redux_toolkit/slices/filenameSlice";
-
-// import { CachedImage, ImageCacheProvider } from "react-native-cached-image";
-import CachedImage from "expo-cached-image";
 import { deleteCachedData } from "../redux_toolkit/slices/retrieveFeedSlice";
-import ImageModal from "react-native-image-modal";
 
-import { ImageCollectionData } from "../utils/types";
+import { ImageCollectionData } from "../model/types";
 import { useAppSelector } from "../redux_toolkit";
 
-import {
-  fetchFeedData,
-  setFeedCollectionCovers,
-  setFeedData,
-} from "../redux_toolkit/slices/retrieveFeedSlice";
+import { fetchFeedData } from "../redux_toolkit/slices/retrieveFeedSlice";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { connectStorageEmulator } from "firebase/storage";
-import ProfileMain from "../components/ProfileMAIN";
-import CustomCachedImage from "../components/CustomCachedImage";
 import RenderItem from "../components/RenderItem";
 
-interface ImagesProps {
-  OnSetFilenames: Function;
-  OnSetCovers: Function;
-}
-
-interface FeedProps {
-  data: ImageCollectionData[];
-}
-
-const _Home: React.FC<FeedProps> = ({ data }) => {
+const _Home: React.FC = () => {
   const dispatch = useDispatch();
 
-  const { feedData } = useAppSelector(({ feed }) => feed);
   const { isLoading } = useAppSelector((state) => state.feed);
-  // const { isLoading } = useAppSelector(({loading}) => loading)
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
+
   const { firstName, lastName, username, bio, avatar } = useAppSelector(
     (state) => state.userData.userData
   );
 
   const [refreshing, setRefreshing] = useState(false);
-  // console.log("ref");
 
   useEffect(() => {
     //@ts-ignore
@@ -114,15 +84,6 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
   );
 
   const handleOnRefresh = () => {
-    setRefreshing(true);
-
-    // Call the function to delete all cached data [STORAGE IMAGES]
-    deleteAllCachedData();
-    // // [ FIRESTORE ]
-    deleteCachedData("cached_feed_data");
-    // Perform the actions you want to do when refreshing, such as fetching new data.
-    // For example, you can call `fetchFeedData` again or any other API call you need.
-    // After fetching new data, set `refreshing` to false to stop the refresh animation.
     //@ts-ignore
     dispatch(fetchFeedData()).then(() => setRefreshing(false));
   };
@@ -145,68 +106,6 @@ const _Home: React.FC<FeedProps> = ({ data }) => {
       // Handle AsyncStorage error
       console.log("Error deleting cached data:", e);
     }
-  };
-  // console.log("");
-  const renderItem = ({ item, index }: any) => {
-    const calculatedHeight = calculateImageHeight(
-      item.image.width,
-      item.image.height
-    );
-    // console.log(calculatedHeight);
-
-    const imageUrl = item.image.uri;
-    const cacheKey = `feed-cache-data-${imageUrl}`; // Append the image URL to create a unique cache key
-
-    return (
-      <View key={item.assetId}>
-        <View>
-          <View style={styles.collectionCard}>
-            <TouchableOpacity
-              onPress={() => {
-                console.log(item);
-              }}>
-              <CustomCachedImage // Use FastImage instead of Image
-                source={{ uri: item.image.uri }}
-                //TODO Append file uri to set / get
-                cacheKey={cacheKey}
-                style={{
-                  flex: 1,
-                  // width: undefined,
-                  height: calculatedHeight,
-                  alignSelf: "stretch",
-                }}
-                resizeMode={"contain"}
-              />
-            </TouchableOpacity>
-            <View
-              style={{ flexDirection: "row", justifyContent: "space-between" }}>
-              <View style={{ marginTop: 8, marginLeft: 5 }}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.views}>234 views</Text>
-              </View>
-
-              <View
-                ///TODO align contents to be placaed both in the vertically centered
-                style={{
-                  flexDirection: "row",
-                  marginRight: 5,
-                  alignItems: "center",
-                }}>
-                {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
-                <Text style={{ color: "#777F88" }}>{username}</Text>
-                <TouchableOpacity style={styles.circle}>
-                  {/* <Image
-                    source={{ uri: avatar.uri }}
-                    style={styles.profileImage}
-                  /> */}
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </View>
-    );
-    // }
   };
 
   return (

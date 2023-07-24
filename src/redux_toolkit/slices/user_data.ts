@@ -15,7 +15,7 @@ import {
   Profile,
   Section,
   ProfileUser,
-} from "../../utils/types";
+} from "../../model/types";
 import {
   getDownloadURL,
   ref,

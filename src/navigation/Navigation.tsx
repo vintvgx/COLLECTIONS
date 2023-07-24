@@ -11,6 +11,10 @@ import Profile from "../screens/Profile";
 import ProfileSettings from "../screens/ProfileSettings";
 import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 
+//views
+//TODO Implement MVC Structure
+import FeedView from "../view/FeedView";
+
 import { Ionicons } from "@expo/vector-icons";
 
 const Tab = createBottomTabNavigator();

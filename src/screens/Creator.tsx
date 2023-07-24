@@ -17,7 +17,7 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
 import { useNavigation } from "@react-navigation/native";
-import { ImageCollectionData, ImageData } from "../utils/types";
+import { ImageCollectionData, ImageData } from "../model/types";
 
 import AddToCollectionButton from "../components/AddToCollectionButton";
 import { connectStorageEmulator } from "firebase/storage";

@@ -1,4 +1,4 @@
-import { ImageCollectionData } from "./types";
+import { ImageCollectionData } from "../model/types";
 
 /**
  * Converts the collection data to be displayed in MasonryList

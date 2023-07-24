@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, memo } from "react";
 import {
   Image,
   ImageStyle,
@@ -50,4 +50,4 @@ const CustomCachedImage: React.FC<CachedImageProps> = ({
   );
 };
 
-export default CustomCachedImage;
+export default memo(CustomCachedImage);
