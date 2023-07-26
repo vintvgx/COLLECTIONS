@@ -10,30 +10,20 @@ import {
   TouchableOpacity,
 } from "react-native";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useAppDispatch, useAppSelector } from "../redux_toolkit";
-//TODO: Try MasonryList for view or develop code to create a masonry view / add onScroll feature that loads image as they are needed
 import MasonryList from "@react-native-seoul/masonry-list";
-
-import { fetchFilenames } from "../redux_toolkit/slices/filenameSlice";
-
-import { fetchUserData } from "../redux_toolkit/slices/user_data";
-
-import { convertDataForMasonryList } from "../utils/functions";
-
-import { ImageCollectionData, ImageData } from "../model/types";
-import ProfileMain from "../components/ProfileMAIN";
 import { useNavigation } from "@react-navigation/native";
-import ProfileImageCard from "../components/ProfileImageCard";
-import ProfileController from "../controller/ProfileController";
 
-//*PROFILESWIPE
+import { useAppDispatch, useAppSelector } from "../../redux_toolkit";
+import { fetchFilenames } from "../../redux_toolkit/slices/filenameSlice";
+import { fetchUserData } from "../../redux_toolkit/slices/user_data";
+
+import ProfileMain from "../../components/ProfileMAIN";
+import ProfileImageCard from "../../components/ProfileImageCard";
+import ProfileController from "../../controller/ProfileController";
+
 const { width } = Dimensions.get("window");
 
-export interface ProfileData {
-  collectionData: ImageCollectionData[];
-}
-
-const Profile: React.FC = () => {
+const ProfileView: React.FC = () => {
   const dispatch = useAppDispatch();
 
   //TODO Add username to page & set loading
@@ -43,11 +33,8 @@ const Profile: React.FC = () => {
 
   const navigation = useNavigation();
 
-  const { collectionsData } = useAppSelector(({ filenames }) => filenames);
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
+  const { avatar } = useAppSelector((state) => state.userData.userData);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -107,7 +94,7 @@ const Profile: React.FC = () => {
   );
 };
 
-export default Profile;
+export default ProfileView;
 
 const styles = StyleSheet.create({
   navigation: {

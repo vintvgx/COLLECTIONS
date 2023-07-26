@@ -13,7 +13,8 @@ import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 
 //views
 //TODO Implement MVC Structure
-import FeedView from "../view/FeedView";
+import FeedView from "../view/LoggedIn/FeedView";
+import ProfileView from "../view/LoggedIn/ProfileView";
 
 import { Ionicons } from "@expo/vector-icons";
 

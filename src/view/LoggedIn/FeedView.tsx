@@ -8,11 +8,11 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useAppSelector } from "../redux_toolkit";
-import { ImageCollectionData } from "../model/types";
-import { fetchFeedData } from "../redux_toolkit/slices/retrieveFeedSlice";
-import FeedController from "../controller/FeedController";
-import RenderItem from "../components/RenderItem";
+import { useAppSelector } from "../../redux_toolkit";
+import { ImageCollectionData } from "../../model/types";
+import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
+import FeedController from "../../controller/FeedController";
+import RenderItem from "../../components/RenderItem";
 
 const FeedView: React.FC = () => {
   const dispatch = useDispatch();
@@ -54,7 +54,7 @@ const FeedView: React.FC = () => {
     <View style={styles.container}>
       <SafeAreaView>
         <View style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
-          <Text style={{ alignSelf: "center", fontSize: 25, fontWeight: 700 }}>
+          <Text style={{ alignSelf: "center", fontSize: 25 }}>
             COLLECTIONS+
           </Text>
         </View>
