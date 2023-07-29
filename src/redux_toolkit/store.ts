@@ -6,6 +6,7 @@ import feedReducer from "./slices/retrieveFeedSlice";
 import authReducer from "./slices/authSlice";
 import thunkmiddleware, { ThunkAction } from "redux-thunk";
 import { useDispatch, TypedUseSelectorHook, useSelector } from "react-redux";
+import LocalStorageMiddleware from "./middleware/LocalStorageMiddleware";
 
 export const store = configureStore({
   reducer: {
@@ -15,6 +16,8 @@ export const store = configureStore({
     feed: feedReducer,
     auth: authReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(LocalStorageMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

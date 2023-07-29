@@ -16,12 +16,10 @@ import {
 
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
-import { useNavigation } from "@react-navigation/native";
 import { ImageCollectionData, ImageData } from "../model/types";
 
+//TODO Update button to use componenet
 import AddToCollectionButton from "../components/AddToCollectionButton";
-import { connectStorageEmulator } from "firebase/storage";
-import { handleSaveButtonPress } from "../utils/functions";
 import { useDispatch } from "react-redux";
 import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
@@ -35,10 +33,6 @@ const Create: React.FC = () => {
   const [imageCount, setImageCount] = useState(0);
   const currentDateTime = new Date();
   const dispatch = useDispatch();
-
-  // const navigation = useNavigation();
-  // const navigation =
-  //   useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const [data, setCollectionData] = useState<ImageCollectionData>({
     image: images,

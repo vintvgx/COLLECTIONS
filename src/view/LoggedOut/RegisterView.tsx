@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 
 import { TextField } from "../../components/TextField";
 import { ButtonWithTitle } from "../../components/ButtonWithTitle";
+import { useDispatch } from "react-redux";
 
 interface LoginProps {
   OnUserLogin: Function;
@@ -15,12 +16,14 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
+  const dispatch = useDispatch();
 
   const onTapAuthenticate = () => {
     if (isSignup) {
       OnUserSignup(email, username, password);
     } else {
-      OnUserLogin(email, password);
+      // OnUserLogin(email, password);
+      dispatch(OnUserLogin({ email: email, password: password }));
     }
   };
 

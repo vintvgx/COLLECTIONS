@@ -3,35 +3,42 @@ import React, { useState, useEffect } from "react";
 import { TextField } from "../components/TextField";
 import { ButtonWithTitle } from "../components/ButtonWithTitle";
 import { connect } from "react-redux";
-import {
-  ApplicationState,
-  OnUserLogin,
-  OnUserSignup,
-  UserState,
-} from "../redux";
+// import {
+//   ApplicationState,
+//   OnUserLogin,
+//   OnUserSignup,
+//   UserState,
+// } from "../redux";
+import { OnUserSignup } from "../redux_toolkit/slices/authSlice";
+import { OnUserLogin } from "../redux_toolkit/slices/authSlice";
+import { useDispatch } from "react-redux";
 
 interface LoginProps {
   OnUserLogin: Function;
   OnUserSignup: Function;
-  userReducer: UserState;
 }
 
 const _RegisterScreen: React.FC<LoginProps> = ({
   OnUserLogin,
   OnUserSignup,
-  userReducer,
 }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
+  const dispatch = useDispatch();
 
-  const onTapAuthenticate = () => {
-    if (isSignup) {
-      OnUserSignup(email, username, password);
-    } else {
-      OnUserLogin(email, password);
+  const onTapAuthenticate = async () => {
+    try {
+      if (isSignup) {
+        await dispatch(OnUserSignup({ email, username, password }));
+      } else {
+        // OnUserLogin(email, password);
+        await dispatch(OnUserLogin({ email: email, password: password }));
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 

@@ -15,6 +15,7 @@ import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 //TODO Implement MVC Structure
 import FeedView from "../view/LoggedIn/FeedView";
 import ProfileView from "../view/LoggedIn/ProfileView";
+import RegisterView from "../view/LoggedOut/RegisterView";
 
 import { Ionicons } from "@expo/vector-icons";
 

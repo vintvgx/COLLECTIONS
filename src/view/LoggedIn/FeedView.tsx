@@ -10,7 +10,10 @@ import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
-import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
+import {
+  deleteCachedData,
+  fetchFeedData,
+} from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
 import RenderItem from "../../components/RenderItem";
 

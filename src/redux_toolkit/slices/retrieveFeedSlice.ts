@@ -48,26 +48,27 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
 
   try {
-    const cachedFeedData = await getCachedData("cached_feed_data");
+    //TODO Update handling cache data / retrieve + delete on refresh
+    // const cachedFeedData = await getCachedData("cached_feed_data");
 
-    if (cachedFeedData) {
-      console.log("CACHED_DATA CALLED");
+    // if (cachedFeedData) {
+    //   console.log("CACHED_DATA CALLED");
 
-      // If cached data is available, use it directly from AsyncStorage
-      dispatch(setFeedData(cachedFeedData));
+    //   // If cached data is available, use it directly from AsyncStorage
+    //   dispatch(setFeedData(cachedFeedData));
 
-      const feedCollectionCovers = cachedFeedData.map(
-        (collection: any[]) => collection[0]
-      );
-      dispatch(setFeedCollectionCovers(feedCollectionCovers));
+    //   const feedCollectionCovers = cachedFeedData.map(
+    //     (collection: any[]) => collection[0]
+    //   );
+    //   dispatch(setFeedCollectionCovers(feedCollectionCovers));
 
-      dispatch(setLoading(false)); // Set isLoading to false
+    //   dispatch(setLoading(false)); // Set isLoading to false
 
-      // console.log(cachedFeedData);
-      console.log("reached");
-      return;
-    }
-    dispatch(setFeedData([]));
+    //   // console.log(cachedFeedData);
+    //   console.log("reached");
+    //   return;
+    // }
+    // dispatch(setFeedData([]));
 
     const feedFilenamesQuerySnapshot = await getDocs(
       collection(db, "feed", "allUsers", "filenames")
