@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 //screens
+import RegisterSplashScreen from "../components/RegisterSplashScreen";
 import { RegisterScreen } from "../screens/Register";
 import { HomeScreen } from "../screens/Home";
 import Creator from "../screens/Creator";
@@ -34,10 +35,12 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 call : navigation.navigate("Home");
 */
 export type RootStackParams = {
+  RegisterSplashScreen: any;
   Register: any;
   Home: any;
   Creator: any;
   ProfileSettings: any;
+  PersonalDetails: any;
 };
 
 export type MainStackParams = {
@@ -72,7 +75,12 @@ export const MAIN = () => {
 
 export const RegisterStack = () => (
   <NavigationContainer>
-    <RootStack.Navigator initialRouteName="Register">
+    <RootStack.Navigator initialRouteName="RegisterSplashScreen">
+      <RootStack.Screen
+        name="RegisterSplashScreen"
+        component={RegisterSplashScreen}
+        options={{ headerShown: false }}
+      />
       <RootStack.Screen
         name="Register"
         component={RegisterScreen}
