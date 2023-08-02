@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import { collection, doc, getDocs } from "firebase/firestore";
 import { DataState, ImageCollectionData, ImageData } from "../../model/types";
-import { db } from "../../firebase/f9_config";
+import { db } from "../../utils/firebase/f9_config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Initial state of the feed slice

@@ -10,6 +10,7 @@ import CustomCachedImage from "../components/CustomCachedImage";
 import { calculateImageHeight } from "../utils/image";
 // import CachedImage from "expo-cached-image";
 import CachedImage from "react-native-image-cache-wrapper";
+import FeedSkeletonView from "./FeedSkeletonView";
 
 interface RenderItemProps {
   item: any;
@@ -46,11 +47,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   };
 
   if (isLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading</Text>
-      </View>
-    );
+    return <FeedSkeletonView />;
   }
 
   //TODO Fix LOADING component when image is loading // handleImageLoad

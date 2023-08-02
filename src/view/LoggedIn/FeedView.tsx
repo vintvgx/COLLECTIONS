@@ -57,7 +57,7 @@ const FeedView: React.FC = () => {
     <View style={styles.container}>
       <SafeAreaView>
         <View style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
-          <Text style={{ alignSelf: "center", fontSize: 25 }}>
+          <Text style={{ alignSelf: "center", fontSize: 25, fontWeight: 700 }}>
             COLLECTIONS+
           </Text>
         </View>

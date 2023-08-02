@@ -8,10 +8,10 @@ import {
   Dimensions,
   RefreshControl,
 } from "react-native";
+import { useIsFocused, useScrollToTop } from "@react-navigation/native";
 import React, { useEffect, useState } from "react";
 import { ButtonWithTitle } from "../components/ButtonWithTitle";
-import { userSignOut } from "../firebase/f9_config";
-import { ApplicationState, OnSetFilenames, OnSetCovers } from "../redux";
+import { userSignOut } from "../utils/firebase/f9_config";
 import { connect } from "react-redux";
 import { useDispatch, useSelector } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";

@@ -135,7 +135,7 @@ export const HomeStack = () => {
       })}>
       <Tab.Screen
         name="Home"
-        component={HomeScreen}
+        component={FeedView}
         options={{ headerShown: false }}
       />
       <Tab.Screen

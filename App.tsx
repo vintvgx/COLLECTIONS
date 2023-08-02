@@ -7,7 +7,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { Provider } from "react-redux";
 // import { store } from "./src/redux";
 import { store } from "./src/redux_toolkit";
-import { auth } from "./src/firebase/f9_config";
+import { auth } from "./src/utils/firebase/f9_config";
 
 //* NAV DEPENDENCIES
 import { NavigationContainer } from "@react-navigation/native";
@@ -66,7 +66,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
 
 //TODO   Code implements keeping track of user logged in
 //TODO   ERROR: Problem with Provider

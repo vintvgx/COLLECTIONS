@@ -7,7 +7,7 @@ import {
   setDoc,
   updateDoc,
 } from "firebase/firestore";
-import { auth, db, storage } from "../../firebase/f9_config";
+import { auth, db, storage } from "../../utils/firebase/f9_config";
 import { ImageCollectionData, DataState, Collections } from "../../model/types";
 import {
   getDownloadURL,
