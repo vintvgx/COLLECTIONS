@@ -39,7 +39,7 @@ const Profile: React.FC = () => {
   //TODO Add username to page & set loading
   // const {isLoading } = useAppSelector((state) => state.userData)
   const { isLoading } = useAppSelector((state) => state.filenames);
-  const [formattedData, setFormattedData] = useState([]);
+  const [formattedData, setFormattedData] = useState<ImageCollectionData[]>([]);
 
   const navigation = useNavigation();
 
@@ -66,10 +66,11 @@ const Profile: React.FC = () => {
 
   useEffect(() => {
     async function fetchCollectionCovers() {
-      await ProfileController.setImageHeightAndWeight(collectionCovers);
-      console.log("FORMAT", formattedData);
+      const covers = await ProfileController.setImageHeightAndWeight(
+        collectionCovers
+      );
 
-      setFormattedData(formattedData);
+      setFormattedData(covers);
     }
 
     fetchCollectionCovers();
