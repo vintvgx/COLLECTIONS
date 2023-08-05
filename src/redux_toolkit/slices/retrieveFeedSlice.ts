@@ -1,9 +1,19 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
-import { collection, doc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  orderBy,
+  limit,
+  query,
+  startAfter,
+  QueryDocumentSnapshot,
+} from "firebase/firestore";
 import { DataState, ImageCollectionData, ImageData } from "../../model/types";
 import { db } from "../../utils/firebase/f9_config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { logFeedData } from "../../utils/functions";
 
 // Initial state of the feed slice
 const initialState: DataState = {
@@ -27,7 +37,9 @@ const feedSlice = createSlice({
       state.error = null;
     },
     setFeedCollectionCovers: (state, action: PayloadAction<any[]>) => {
-      state.feedCollectionCovers = action.payload;
+      state.feedCollectionCovers = state.feedCollectionCovers?.concat(
+        action.payload
+      );
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -44,39 +56,43 @@ const feedSlice = createSlice({
 export const { setFeedData, setFeedCollectionCovers, setLoading, setError } =
   feedSlice.actions;
 
+let lastDoc: QueryDocumentSnapshot | null = null;
+
 export const fetchFeedData = () => async (dispatch: AppDispatch) => {
   dispatch(setLoading(true));
 
   try {
-    //TODO Update handling cache data / retrieve + delete on refresh
-    // const cachedFeedData = await getCachedData("cached_feed_data");
+    let feedFilenamesQuery;
 
-    // if (cachedFeedData) {
-    //   console.log("CACHED_DATA CALLED");
+    // If this is the first batch, we don't need to use startAfter
+    if (!lastDoc) {
+      feedFilenamesQuery = query(
+        collection(db, "feed/allUsers/filenames"),
+        orderBy("createdAt", "desc"),
+        limit(5)
+      );
+    } else {
+      // If this isn't the first batch, start fetching after the last document of the previous batch
+      feedFilenamesQuery = query(
+        collection(db, "feed/allUsers/filenames"),
+        orderBy("createdAt", "desc"),
+        startAfter(lastDoc),
+        limit(5)
+      );
+    }
 
-    //   // If cached data is available, use it directly from AsyncStorage
-    //   dispatch(setFeedData(cachedFeedData));
-
-    //   const feedCollectionCovers = cachedFeedData.map(
-    //     (collection: any[]) => collection[0]
-    //   );
-    //   dispatch(setFeedCollectionCovers(feedCollectionCovers));
-
-    //   dispatch(setLoading(false)); // Set isLoading to false
-
-    //   // console.log(cachedFeedData);
-    //   console.log("reached");
-    //   return;
-    // }
-    // dispatch(setFeedData([]));
-
-    const feedFilenamesQuerySnapshot = await getDocs(
-      collection(db, "feed", "allUsers", "filenames")
-    );
+    const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
 
     const filenames = await Promise.all(
       feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
     );
+
+    if (feedFilenamesQuerySnapshot.docs.length > 0) {
+      lastDoc =
+        feedFilenamesQuerySnapshot.docs[
+          feedFilenamesQuerySnapshot.docs.length - 1
+        ];
+    }
 
     const feedCollectionData = await Promise.all(
       filenames.map(async (file) => {
@@ -89,9 +105,6 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
         );
 
         fetchFeedCollections.forEach((item) => {
-          //   console.log(item.data());
-          //! DISPLAYS OBJECT LINE BY LINE !!!//
-          //  console.log(JSON.stringify(item.data(), null, 2));
           feedImageCollection.push({
             image: item.data(),
             title: item.data().title,
@@ -99,11 +112,7 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
           });
         });
 
-        //! DISPLAYS OBJECT LINE BY LINE !!!//
-        // console.log(
-        //   "ORIG FEED DATA:",
-        //   JSON.stringify(feedImageCollection, null, 2)
-        // );
+        // logFeedData(feedImageCollection);
 
         dispatch(setFeedData(feedImageCollection));
         return feedImageCollection;
@@ -115,18 +124,8 @@ export const fetchFeedData = () => async (dispatch: AppDispatch) => {
     );
     dispatch(setFeedCollectionCovers(feedCollectionCovers));
 
-    const flattenedFeedCollectionData = feedCollectionData.flat();
-    // console.log("FLAT: ", flattenedFeedCollectionData);
-    //! DISPLAYS OBJECT LINE BY LINE !!!//
-    // console.log(
-    //   "FLATTENED:",
-    //   JSON.stringify(flattenedFeedCollectionData, null, 2)
-    // );
-
     // Cache the fetched data for future use
     cacheData("cached_feed_data", feedCollectionData);
-
-    console.log("PUT IT IN ELSE!");
 
     dispatch(setLoading(false));
     console.log("Fetch data completed"); // Add this line to check if the action is completed

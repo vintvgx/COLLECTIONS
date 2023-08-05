@@ -24,6 +24,7 @@ const initialState: DataState = {
   collectionsData: [],
   isLoading: false,
   error: null,
+  feedCollectionCovers: [],
   collectionCovers: [],
 };
 
@@ -66,7 +67,7 @@ export const addCollectionData =
     const user = auth.currentUser;
 
     if (user) {
-      const { title, image } = dataState;
+      const { title, image, createdAt } = dataState;
 
       // const collectionRef = `collections/${user?.uid}/filenames`
       const collectionRef = doc(
@@ -77,13 +78,17 @@ export const addCollectionData =
       const FEED_FILENAMES_REF = doc(db, `feed/allUsers/filenames`, title);
 
       try {
-        //TODO: REMOVE COMMENTS / uploadResumableBytes fixed app crash
-        console.log("TOP");
+        console.log("SET COLLECTIONREF TO FEED");
         await setDoc(collectionRef, {
           id: title,
+          createdAt: createdAt,
+          user: user.uid,
         });
+        console.log("SET FEED_FILENAMES_REF TO FEED");
         await setDoc(FEED_FILENAMES_REF, {
           id: title,
+          createdAt: createdAt,
+          user: user.uid,
         });
         console.log("FILENAME ADDED");
 
@@ -179,39 +184,12 @@ export const addCollectionData =
                         uid: user.uid,
                       });
 
-                      // const updatedCollectionData = {
-                      //   item,
-                      //   title,
-                      //   date
-                      // };
-
                       dispatch(uploadCollectionData([item]));
                       console.log("\n\nDISPATCHED:", item.fileName);
                     }
                   );
                 }
               );
-
-              //* CODE FOR uploadBytes
-              // Rest of the code
-              // const snapshot = await uploadBytes(img_storage_ref, blob);
-              // console.log("Reached SNAPSHOT -> Image Uploaded: ", snapshot);
-
-              // const downloadURL = await getDownloadURL(snapshot.ref);
-              // console.log("Download link to file", downloadURL);
-              // item.uri = downloadURL;
-
-              // await updateDoc(img_firestore_ref, {
-              //   uri: item.uri,
-              // });
-              // const updatedCollectionData = {
-              //   item,
-              //   imgURI: item.uri,
-              //   title,
-              // };
-
-              // dispatch(uploadCollectionData([updatedCollectionData]));
-              // console.log("\n\nDISPATCHED:", item.fileName);
             } else {
               throw new Error("Failed to fetch the image uri");
             }

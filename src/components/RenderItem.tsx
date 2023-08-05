@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useAppSelector } from "../redux_toolkit";
@@ -11,6 +11,9 @@ import { calculateImageHeight } from "../utils/image";
 // import CachedImage from "expo-cached-image";
 import CachedImage from "react-native-image-cache-wrapper";
 import FeedSkeletonView from "./FeedSkeletonView";
+import { db } from "../utils/firebase/f9_config";
+import { doc, getDoc } from "firebase/firestore";
+import { UserData } from "../model/types";
 
 interface RenderItemProps {
   item: any;
@@ -32,7 +35,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     item.image.height
   );
   const imageUrl = item.image.uri;
-  const cacheKey = `feed-cache-data-${imageUrl}`;
+  const [user, setUser] = useState<UserData | null>(null);
 
   const { firstName, lastName, username, bio, avatar } = useAppSelector(
     (state) => state.userData.userData
@@ -45,6 +48,39 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   const handleImageLoad = () => {
     setIsImageLoading(false);
   };
+
+  useEffect(() => {
+    try {
+      const fetchUser = async () => {
+        console.log(item.image.uid);
+        const userRef = doc(db, "users", item.image.uid);
+        const userSnapshot = await getDoc(userRef);
+
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data() as UserData;
+          console.log("IMAGE USER IS:", userData);
+          setUser(userData);
+        }
+      };
+
+      fetchUser();
+    } catch (e) {
+      alert(`Error fetching data for ${item}`);
+      console.log("error fetching user data from collection");
+    }
+  }, []);
+
+  const dateString = item.image.createdAt;
+  const date = new Date(dateString);
+
+  const userFriendlyDate = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
 
   if (isLoading) {
     return <FeedSkeletonView />;
@@ -79,6 +115,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
           <View style={{ marginTop: 8, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.views}>234 views</Text>
+            <Text style={styles.views}>{userFriendlyDate}</Text>
           </View>
 
           <View
@@ -89,12 +126,12 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
               alignItems: "center",
             }}>
             {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
-            <Text style={{ color: "#777F88" }}>{username}</Text>
+            <Text style={{ color: "#777F88" }}>{user?.username}</Text>
             <TouchableOpacity style={styles.circle}>
-              {/* <Image
-                    source={{ uri: avatar.uri }}
-                    style={styles.profileImage}
-                  /> */}
+              <Image
+                source={{ uri: user?.avatar.uri }}
+                style={styles.profileImage}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -110,7 +147,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 200, // Set an appropriate height while loading
   },
-  // Rest of your styles
   collectionCard: {
     flex: 1,
     marginBottom: 75,
@@ -134,6 +170,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     // marginBottom: 10,
     // marginTop: 15,
+  },
+  profileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 45,
+    flex: 1,
+    resizeMode: "cover",
   },
 });
 

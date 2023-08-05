@@ -4,26 +4,22 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
-import {
-  deleteCachedData,
-  fetchFeedData,
-} from "../../redux_toolkit/slices/retrieveFeedSlice";
+import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
 import RenderItem from "../../components/RenderItem";
+import { logFeedData } from "../../utils/functions";
 
 const FeedView: React.FC = () => {
   const dispatch = useDispatch();
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
-
   const [refreshing, setRefreshing] = useState(false);
   const [updatedCollectionCovers, setUpdatedCollectionCovers] = useState<
     ImageCollectionData[] | null
@@ -34,18 +30,9 @@ const FeedView: React.FC = () => {
     dispatch(fetchFeedData());
   }, [dispatch]);
 
-  useEffect(() => {
-    updateCovers();
-  }, [feedCollectionCovers]);
-
-  const updateCovers = async () => {
-    const modifiedFeedCollectionCovers =
-      FeedController.collection_updateDateProp(feedCollectionCovers);
-    const sortedFeedCollectionCovers = FeedController.sortCollectionByDate(
-      await modifiedFeedCollectionCovers
-    );
-
-    setUpdatedCollectionCovers(await sortedFeedCollectionCovers);
+  const fetchMoreFeedData = () => {
+    //@ts-ignore
+    dispatch(fetchFeedData());
   };
 
   const handleOnRefresh = () => {
@@ -56,11 +43,13 @@ const FeedView: React.FC = () => {
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <View style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
-          <Text style={{ alignSelf: "center", fontSize: 25, fontWeight: 700 }}>
+        <TouchableOpacity
+          style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
+          <Text
+            style={{ alignSelf: "center", fontSize: 25, fontWeight: "700" }}>
             COLLECTIONS+
           </Text>
-        </View>
+        </TouchableOpacity>
         <FlatList
           refreshControl={
             <RefreshControl
@@ -68,7 +57,9 @@ const FeedView: React.FC = () => {
               onRefresh={handleOnRefresh}
             />
           }
-          data={updatedCollectionCovers}
+          data={feedCollectionCovers}
+          // onEndReached={fetchMoreFeedData} // call function to fetch more data
+          // onEndReachedThreshold={0.5} // fetch more data when the end of the list is half a screen away
           renderItem={({ item }) => <RenderItem item={item} />}
         />
       </SafeAreaView>

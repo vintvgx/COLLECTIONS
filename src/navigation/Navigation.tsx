@@ -34,6 +34,7 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
 call : navigation.navigate("Home");
 */
+
 export type RootStackParams = {
   RegisterSplashScreen: any;
   Register: any;
@@ -46,6 +47,7 @@ export type RootStackParams = {
 export type MainStackParams = {
   Home: any;
   ProfileSettings: any;
+  PersonalDetails: any;
 };
 
 //TODO: Add Collection Initial Page detailing App Functionality & Add to Register Stack
@@ -102,12 +104,20 @@ const getIconColor = (focused: boolean) => {
   return focused ? "#000" : "#aaa";
 };
 
+type IconName =
+  | "home"
+  | "home-outline"
+  | "add-circle"
+  | "add-circle-outline"
+  | "person"
+  | "person-outline";
+
 export const HomeStack = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+          let iconName: IconName = "home-outline";
 
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
@@ -145,7 +155,7 @@ export const HomeStack = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileView}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

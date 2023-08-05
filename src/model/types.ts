@@ -22,15 +22,14 @@ export interface ImageData {
   type: string;
   uri: string;
   width: number;
-  time?: string;
-  date?: string;
+  createdAt: string;
   uid?: string;
 }
 
 export interface ImageCollectionData {
   image: ImageData[];
   title: string;
-  date: string;
+  createdAt: string;
 }
 
 export interface Collections extends ImageCollectionData {

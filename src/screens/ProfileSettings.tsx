@@ -20,9 +20,7 @@ import { Section, SectionItem } from "../model/types";
 import { useAppSelector } from "../redux_toolkit";
 import { useNavigation } from "@react-navigation/native";
 
-interface ProfileSettingsProps extends ProfileUser {}
-
-const ProfileSettings: React.FC<ProfileSettingsProps> = ({}) => {
+const ProfileSettings: React.FC = ({}) => {
   const dispatch = useDispatch();
 
   const { firstName, lastName, username, bio, avatar } = useAppSelector(

@@ -23,8 +23,6 @@ import AddToCollectionButton from "../components/AddToCollectionButton";
 import { useDispatch } from "react-redux";
 import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
-// type ImageData = { uri: string };
-
 const Create: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [cover, setCover] = useState("");
@@ -32,12 +30,13 @@ const Create: React.FC = () => {
   const [collectionTitle, setCollectionTitle] = useState("");
   const [imageCount, setImageCount] = useState(0);
   const currentDateTime = new Date();
+  const currentTimestamp = new Date().toISOString();
   const dispatch = useDispatch();
 
   const [data, setCollectionData] = useState<ImageCollectionData>({
     image: images,
     title: collectionTitle,
-    date: currentDateTime.toLocaleString(),
+    createdAt: currentTimestamp,
   });
 
   useEffect(() => {
@@ -104,11 +103,10 @@ const Create: React.FC = () => {
           ...image,
           id: index,
           title: collectionTitle,
-          time: currentDateTime.toLocaleTimeString(),
-          date: currentDateTime.toLocaleDateString(),
+          createdAt: currentTimestamp,
         })),
         title: collectionTitle,
-        date: currentDateTime.toLocaleString(),
+        createdAt: currentTimestamp,
       };
 
       if (collectionTitle == "") {
@@ -253,10 +251,7 @@ const Create: React.FC = () => {
                   Image Count: {imageCount}
                 </Text>
                 <Text style={styles.modalSubtitle}>
-                  Date: {currentDateTime.toLocaleDateString()}
-                </Text>
-                <Text style={styles.modalSubtitle}>
-                  Time: {currentDateTime.toLocaleTimeString()}
+                  Created At: {new Date(currentDateTime).toLocaleString()}
                 </Text>
                 <View style={styles.buttonContainer}>
                   <TouchableOpacity

@@ -21,6 +21,7 @@ import ProfileMain from "../../components/ProfileMAIN";
 import ProfileImageCard from "../../components/ProfileImageCard";
 import ProfileController from "../../controller/ProfileController";
 import { ImageCollectionData } from "../../model/types";
+import { logFeedData } from "../../utils/functions";
 
 const { width } = Dimensions.get("window");
 
@@ -57,12 +58,12 @@ const ProfileView: React.FC = () => {
       const covers = await ProfileController.setImageHeightAndWeight(
         collectionCovers
       );
-
+      logFeedData(covers);
       setFormattedData(covers);
     }
 
     fetchCollectionCovers();
-  }, []);
+  }, [collectionCovers]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
