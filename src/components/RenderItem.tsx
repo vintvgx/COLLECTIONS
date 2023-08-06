@@ -2,9 +2,12 @@ import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useAppSelector } from "../redux_toolkit";
-import { RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
+import { AppDispatch, RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
 
-import { selectFeedLoading } from "../redux_toolkit/slices/retrieveFeedSlice";
+import {
+  fetchFeedUserData,
+  selectFeedLoading,
+} from "../redux_toolkit/slices/retrieveFeedSlice";
 
 import CustomCachedImage from "../components/CustomCachedImage";
 import { calculateImageHeight } from "../utils/image";
@@ -20,7 +23,8 @@ interface RenderItemProps {
 }
 
 const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.feed.userData);
 
   /**
    * NOTE:
@@ -35,7 +39,6 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     item.image.height
   );
   const imageUrl = item.image.uri;
-  const [user, setUser] = useState<UserData | null>(null);
 
   const { firstName, lastName, username, bio, avatar } = useAppSelector(
     (state) => state.userData.userData
@@ -50,25 +53,8 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   };
 
   useEffect(() => {
-    try {
-      const fetchUser = async () => {
-        console.log(item.image.uid);
-        const userRef = doc(db, "users", item.image.uid);
-        const userSnapshot = await getDoc(userRef);
-
-        if (userSnapshot.exists()) {
-          const userData = userSnapshot.data() as UserData;
-          console.log("IMAGE USER IS:", userData);
-          setUser(userData);
-        }
-      };
-
-      fetchUser();
-    } catch (e) {
-      alert(`Error fetching data for ${item}`);
-      console.log("error fetching user data from collection");
-    }
-  }, []);
+    dispatch(fetchFeedUserData(item.image.uid));
+  }, [dispatch, item.image.uid]);
 
   const dateString = item.image.createdAt;
   const date = new Date(dateString);
@@ -82,9 +68,9 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     second: "2-digit",
   });
 
-  if (isLoading) {
-    return <FeedSkeletonView />;
-  }
+  // if (isLoading) {
+  //   return <FeedSkeletonView />;
+  // }
 
   //TODO Fix LOADING component when image is loading // handleImageLoad
   //TODO: Convert back to CachedImage / look up file location set&get

@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   FlatList,
   RefreshControl,
   SafeAreaView,
@@ -9,6 +10,7 @@ import {
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
+import { AppDispatch } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
@@ -18,26 +20,52 @@ import RenderItem from "../../components/RenderItem";
 import { logFeedData } from "../../utils/functions";
 
 const FeedView: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [feedCovers, setFeedCovers] = useState<ImageCollectionData[]>([]);
+
   const [refreshing, setRefreshing] = useState(false);
   const [updatedCollectionCovers, setUpdatedCollectionCovers] = useState<
     ImageCollectionData[] | null
   >(null);
 
   useEffect(() => {
-    //@ts-ignore
     dispatch(fetchFeedData());
   }, [dispatch]);
 
+  useEffect(() => {
+    if (feedCollectionCovers) {
+      // Adding only new feedCollectionCovers
+      setFeedCovers((prevCovers) => [
+        ...prevCovers,
+        ...feedCollectionCovers.filter(
+          (cover) =>
+            !prevCovers.some(
+              (prevCover) => prevCover.image.fileName === cover.image.fileName
+            ) // assuming `id` is unique
+        ),
+      ]);
+    }
+  }, [feedCollectionCovers]);
+
   const fetchMoreFeedData = () => {
-    //@ts-ignore
-    dispatch(fetchFeedData());
+    setLoadingMore(true);
+    dispatch(fetchFeedData()).finally(() => {
+      setLoadingMore(false);
+    });
   };
 
-  const handleOnRefresh = () => {
-    //@ts-ignore
-    dispatch(fetchFeedData()).then(() => setRefreshing(false));
+  const handleOnRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await dispatch(fetchFeedData()); // Wait for the dispatch to complete
+    } catch (error) {
+      // Handle any errors that might occur during the dispatch
+      console.error(error);
+    }
+    setRefreshing(false); // Update the refreshing state after the dispatch completes
+    // logFeedData(feedCollectionCovers);
   };
 
   return (
@@ -57,10 +85,13 @@ const FeedView: React.FC = () => {
               onRefresh={handleOnRefresh}
             />
           }
-          data={feedCollectionCovers}
-          // onEndReached={fetchMoreFeedData} // call function to fetch more data
-          // onEndReachedThreshold={0.5} // fetch more data when the end of the list is half a screen away
+          showsVerticalScrollIndicator={false}
+          ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
+          data={feedCovers}
+          onEndReached={fetchMoreFeedData} // call function to fetch more data
+          onEndReachedThreshold={0.2} // fetch more data when the end of the list is half a screen away
           renderItem={({ item }) => <RenderItem item={item} />}
+          keyExtractor={(item) => item.image.fileName.toString()} // assuming each item has a unique id
         />
       </SafeAreaView>
     </View>

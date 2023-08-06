@@ -48,12 +48,6 @@ const ProfileSettings: React.FC = ({}) => {
     }));
   };
 
-  // useEffect(() => {
-  //   console.log("OUTPUT: " + firstName + lastName + username + bio);
-  //   // @ts-ignore
-  //   dispatch(fetchUserData());
-  // }, [dispatch]);
-
   useEffect(() => {
     // @ts-ignore
     dispatch(fetchUserData());

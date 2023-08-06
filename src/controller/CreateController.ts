@@ -1,10 +1,10 @@
 import * as ImagePicker from "expo-image-picker";
 import React from "react";
-import { ImageCollectionData } from "../model/types";
+import { ImageCollectionData, ImageData } from "../model/types";
+import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
 class CreateController {
   static async ADD_COLLECTION(
-    images: ImageData[],
     setImages: React.Dispatch<React.SetStateAction<ImageData[]>>
   ) {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -17,14 +17,10 @@ class CreateController {
 
     if (!result.canceled) {
       setImages(result.assets);
-      // setImages([...images, { uri: result.uri }]);
     }
-
-    console.log(images);
   }
 
-  static async takePhoto(
-    images: ImageData[],
+  static async TAKE_PHOTO(
     setImages: React.Dispatch<React.SetStateAction<ImageData[]>>
   ) {
     const result = await ImagePicker.launchCameraAsync({
@@ -37,19 +33,18 @@ class CreateController {
 
     if (!result.canceled) {
       setImages(result.assets);
-      // setImages([...images, { uri: result.uri }]);
     }
   }
 
-  static async handleConfirmButtonPressed(
+  static async HANDLE_CONFIRM_BUTTON_PRESSED(
     images: ImageData[],
-    setImages: React.Dispatch<React.SetStateAction<ImageData[]>>,
-    setCollectionTitle: React.Dispatch<React.SetStateAction<string>>,
     collectionTitle: string,
-    currentDateTime: Date,
-    dispatch: Function,
+    setCollectionTitle: React.Dispatch<React.SetStateAction<string>>,
+    setImageCount: React.Dispatch<React.SetStateAction<number>>,
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
-    setImageCount: React.Dispatch<React.SetStateAction<number>>
+    setImages: React.Dispatch<React.SetStateAction<ImageData[]>>,
+    currentTimestamp: string, // Adjust the type as necessary
+    dispatch: Function
   ) {
     if (images.length === 0) {
       return;
@@ -61,11 +56,10 @@ class CreateController {
           ...image,
           id: index,
           title: collectionTitle,
-          time: currentDateTime.toLocaleTimeString(),
-          date: currentDateTime.toLocaleDateString(),
+          createdAt: currentTimestamp,
         })),
         title: collectionTitle,
-        date: currentDateTime.toLocaleString(),
+        createdAt: currentTimestamp,
       };
 
       if (collectionTitle == "") {
@@ -83,7 +77,7 @@ class CreateController {
     }
   }
 
-  static handleSaveButtonPress(
+  static HANDLE_SAVE_BUTTON_PRESSED(
     images: ImageData[],
     setCollectionTitle: React.Dispatch<React.SetStateAction<string>>,
     setImageCount: React.Dispatch<React.SetStateAction<number>>,
@@ -94,3 +88,5 @@ class CreateController {
     setShowModal(true);
   }
 }
+
+export default CreateController;

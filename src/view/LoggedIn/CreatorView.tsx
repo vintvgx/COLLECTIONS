@@ -1,28 +1,24 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
 import {
-  TouchableOpacity,
-  View,
-  Text,
-  SafeAreaView,
-  Alert,
-  FlatList,
-  Image,
   StyleSheet,
-  Dimensions,
+  Text,
+  View,
+  Alert,
+  TouchableOpacity,
+  FlatList,
   Modal,
   TextInput,
-  Button,
+  SafeAreaView,
+  Image,
+  Dimensions,
 } from "react-native";
+import React, { useEffect, useState } from "react";
 
-import * as ImagePicker from "expo-image-picker";
-import { ImageCollectionData, ImageData } from "../model/types";
-
-//TODO Update button to use componenet
-import AddToCollectionButton from "../components/AddToCollectionButton";
 import { useDispatch } from "react-redux";
-import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
+import * as ImagePicker from "expo-image-picker";
+import CreateController from "../../controller/CreateController";
+import { ImageData } from "../../model/types";
 
-const Create: React.FC = () => {
+const CreatorView: React.FC = () => {
   const [images, setImages] = useState<ImageData[]>([]);
   const [cover, setCover] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -31,12 +27,6 @@ const Create: React.FC = () => {
   const currentDateTime = new Date();
   const currentTimestamp = new Date().toISOString();
   const dispatch = useDispatch();
-
-  const [data, setCollectionData] = useState<ImageCollectionData>({
-    image: images,
-    title: collectionTitle,
-    createdAt: currentTimestamp,
-  });
 
   useEffect(() => {
     const getPermissions = async () => {
@@ -56,74 +46,35 @@ const Create: React.FC = () => {
     getPermissions();
   }, []);
 
-  const addCollection = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: false,
-      quality: 1,
-      allowsMultipleSelection: true,
-      selectionLimit: 20,
-    });
-
-    if (!result.canceled) {
-      setImages(result.assets);
-      // setImages([...images, { uri: result.uri }]);
-    }
-
-    console.log(images);
-  };
-
-  const takePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
-      allowsMultipleSelection: true,
-      selectionLimit: 20 - images.length,
-    });
-
-    if (!result.canceled) {
-      setImages(result.assets);
-      // setImages([...images, { uri: result.uri }]);
-    }
-  };
-
   const handleConfirmButtonPressed = async () => {
-    if (images.length === 0) {
-      return;
-    }
-
-    try {
-      const dataState: ImageCollectionData = {
-        image: images.map((image, index) => ({
-          ...image,
-          id: index,
-          title: collectionTitle,
-          createdAt: currentTimestamp,
-        })),
-        title: collectionTitle,
-        createdAt: currentTimestamp,
-      };
-
-      if (collectionTitle == "") {
-        console.log("ENTER TITLE U DWEEB!");
-      } else {
-        // @ts-ignore
-        await dispatch(addCollectionData(dataState));
-        setCollectionTitle("");
-        setImageCount(0);
-        setShowModal(false);
-        setImages([]);
-      }
-    } catch (error) {
-      console.log("Error:", error);
-    }
+    await CreateController.HANDLE_CONFIRM_BUTTON_PRESSED(
+      images,
+      collectionTitle,
+      setCollectionTitle,
+      setImageCount,
+      setShowModal,
+      setImages,
+      currentTimestamp,
+      dispatch
+    );
   };
 
   const handleSaveButtonPress = () => {
-    setCollectionTitle("");
-    setImageCount(images.length);
-    setShowModal(true);
+    CreateController.HANDLE_SAVE_BUTTON_PRESSED(
+      images,
+      setCollectionTitle,
+      setImageCount,
+      setShowModal
+    );
+  };
+
+  const takePhoto = async () => {
+    await CreateController.TAKE_PHOTO(setImages);
+  };
+
+  const addCollection = async () => {
+    await CreateController.ADD_COLLECTION(setImages);
+    console.log(images);
   };
 
   return (
@@ -146,7 +97,7 @@ const Create: React.FC = () => {
                 // elevation: 2, // Set the elevation for Android
               }}>
               <Image
-                source={require("../../assets/stature.jpg")}
+                source={require("../../../assets/stature.jpg")}
                 style={{
                   flexGrow: 1,
 
@@ -162,7 +113,7 @@ const Create: React.FC = () => {
                 style={{
                   textAlign: "center",
                   position: "absolute",
-                  fontSize: "50",
+                  fontSize: 50,
                   color: "white",
                   top: "20%",
                   width: "95%",
@@ -262,7 +213,7 @@ const Create: React.FC = () => {
   );
 };
 
-export default Create;
+export default CreatorView;
 
 const styles = StyleSheet.create({
   flatlist_container: {

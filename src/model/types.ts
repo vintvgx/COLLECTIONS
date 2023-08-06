@@ -6,15 +6,15 @@ export interface DataState {
   isLoading: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
+  needsReset: boolean;
   feedCollectionCovers: ImageCollectionData[] | undefined;
+  lastDoc: any;
+  userData: UserData | null;
 }
 
 export interface ImageData {
   assetId: string;
   id: number;
-  // base64?: null;
-  // duration?: null;
-  // exif?: null;
   title?: string;
   fileName: string;
   fileSizE: number;

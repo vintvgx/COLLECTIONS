@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import {
   collection,
@@ -9,8 +9,14 @@ import {
   query,
   startAfter,
   QueryDocumentSnapshot,
+  getDoc,
 } from "firebase/firestore";
-import { DataState, ImageCollectionData, ImageData } from "../../model/types";
+import {
+  DataState,
+  ImageCollectionData,
+  ImageData,
+  UserData,
+} from "../../model/types";
 import { db } from "../../utils/firebase/f9_config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { logFeedData } from "../../utils/functions";
@@ -24,7 +30,10 @@ const initialState: DataState = {
   isLoading: false,
   error: null,
   collectionCovers: [],
+  needsReset: false,
   feedCollectionCovers: [],
+  lastDoc: null,
+  userData: null,
 };
 
 const feedSlice = createSlice({
@@ -41,99 +50,177 @@ const feedSlice = createSlice({
         action.payload
       );
     },
+    setLastDoc: (
+      state,
+      action: PayloadAction<QueryDocumentSnapshot | null>
+    ) => {
+      state.lastDoc = action.payload;
+    },
+    resetLastDoc: (state) => {
+      state.lastDoc = null;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
       state.error = null;
-      console.log("STATE OF LOADING: ", state.isLoading);
     },
     setError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.error = action.payload;
     },
   },
+  extraReducers: (builder) => {
+    builder.addCase(fetchFeedUserData.fulfilled, (state, action) => {
+      state.userData = action.payload;
+    });
+  },
 });
 
-export const { setFeedData, setFeedCollectionCovers, setLoading, setError } =
-  feedSlice.actions;
+export const {
+  setFeedData,
+  setFeedCollectionCovers,
+  setLastDoc,
+  resetLastDoc,
+  setLoading,
+  setError,
+} = feedSlice.actions;
 
-let lastDoc: QueryDocumentSnapshot | null = null;
+export const fetchFeedUserData = createAsyncThunk(
+  "feed/fetchUserData",
+  async (uid: string) => {
+    const userRef = doc(db, "users", uid);
+    const userSnapshot = await getDoc(userRef);
+    if (userSnapshot.exists()) {
+      return userSnapshot.data() as UserData;
+    }
+    throw new Error("User does not exist");
+  }
+);
 
-export const fetchFeedData = () => async (dispatch: AppDispatch) => {
-  dispatch(setLoading(true));
+export const fetchMoreFeedData =
+  () => async (dispatch: AppDispatch, getState: () => RootState) => {
+    dispatch(setLoading(true));
+    const state = getState();
+    let lastDoc = state.feed.lastDoc;
 
-  try {
-    let feedFilenamesQuery;
+    try {
+      let feedFilenamesQuery;
 
-    // If this is the first batch, we don't need to use startAfter
-    if (!lastDoc) {
-      feedFilenamesQuery = query(
-        collection(db, "feed/allUsers/filenames"),
-        orderBy("createdAt", "desc"),
-        limit(5)
-      );
-    } else {
-      // If this isn't the first batch, start fetching after the last document of the previous batch
       feedFilenamesQuery = query(
         collection(db, "feed/allUsers/filenames"),
         orderBy("createdAt", "desc"),
         startAfter(lastDoc),
         limit(5)
       );
-    }
 
-    const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
+      const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
 
-    const filenames = await Promise.all(
-      feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
-    );
+      const filenames = await Promise.all(
+        feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
+      );
 
-    if (feedFilenamesQuerySnapshot.docs.length > 0) {
       lastDoc =
         feedFilenamesQuerySnapshot.docs[
           feedFilenamesQuerySnapshot.docs.length - 1
         ];
+      const lastDocData = lastDoc.data();
+      dispatch(setLastDoc(lastDocData)); // Update the last document in the Redux state
+      console.log("LAST DOC: ", lastDocData);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+export const fetchFeedData =
+  () => async (dispatch: AppDispatch, getState: () => RootState) => {
+    dispatch(setLoading(true));
+    const state = getState();
+    let lastDoc = state.feed.lastDoc;
+    if (state.feed.hasFetchedAll) {
+      // If all data has been fetched, return without initiating the fetch
+      return;
     }
 
-    const feedCollectionData = await Promise.all(
-      filenames.map(async (file) => {
-        const feedImageCollection: ImageCollectionData[] = [];
+    try {
+      let feedFilenamesQuery;
+      console.log("LAST DOC: ", lastDoc);
 
-        const imgRef = `feed/allUsers/files/${file}/images`;
-
-        const fetchFeedCollections = await getDocs(
-          await collection(db, imgRef)
+      // If this is the first batch, we don't need to use startAfter
+      if (!lastDoc) {
+        feedFilenamesQuery = query(
+          collection(db, "feed/allUsers/filenames"),
+          orderBy("createdAt", "desc"),
+          limit(5)
         );
+      } else {
+        // If this isn't the first batch, start fetching after the last document of the previous batch
+        feedFilenamesQuery = query(
+          collection(db, "feed/allUsers/filenames"),
+          orderBy("createdAt", "desc"),
+          startAfter(lastDoc),
+          limit(5)
+        );
+      }
 
-        fetchFeedCollections.forEach((item) => {
-          feedImageCollection.push({
-            image: item.data(),
-            title: item.data().title,
-            date: item.data().date,
+      const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
+
+      const filenames = await Promise.all(
+        feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
+      );
+
+      // console.log("FEEDFILENAMESQUERY: ", feedFilenamesQuery);
+      // console.log("feedFilenamesQuerySnapshot: ", feedFilenamesQuerySnapshot);
+      // console.log("FILENAMES:", filenames);
+
+      if (feedFilenamesQuerySnapshot.docs.length > 0) {
+        lastDoc =
+          feedFilenamesQuerySnapshot.docs[
+            feedFilenamesQuerySnapshot.docs.length - 1
+          ];
+        const lastDocData = lastDoc.data();
+        dispatch(setLastDoc(lastDoc)); // Update the last document in the Redux state
+        console.log("LAST DOC: ", lastDocData);
+      }
+
+      const feedCollectionData = await Promise.all(
+        filenames.map(async (file) => {
+          const feedImageCollection: ImageCollectionData[] = [];
+
+          const imgRef = `feed/allUsers/files/${file}/images`;
+
+          const fetchFeedCollections = await getDocs(
+            await collection(db, imgRef)
+          );
+
+          fetchFeedCollections.forEach((item) => {
+            feedImageCollection.push({
+              image: item.data(),
+              title: item.data().title,
+              date: item.data().date,
+            });
           });
-        });
 
-        // logFeedData(feedImageCollection);
+          // logFeedData(feedImageCollection);
 
-        dispatch(setFeedData(feedImageCollection));
-        return feedImageCollection;
-      })
-    );
+          dispatch(setFeedData(feedImageCollection));
+          return feedImageCollection;
+        })
+      );
 
-    const feedCollectionCovers = feedCollectionData.map(
-      (collection) => collection[0]
-    );
-    dispatch(setFeedCollectionCovers(feedCollectionCovers));
+      const feedCollectionCovers = feedCollectionData.map(
+        (collection) => collection[0]
+      );
+      dispatch(setFeedCollectionCovers(feedCollectionCovers));
 
-    // Cache the fetched data for future use
-    cacheData("cached_feed_data", feedCollectionData);
+      // Cache the fetched data for future use
+      cacheData("cached_feed_data", feedCollectionData);
 
-    dispatch(setLoading(false));
-    console.log("Fetch data completed"); // Add this line to check if the action is completed
-  } catch (error) {
-    dispatch(setError("Error"));
-    console.log("Error uploading images:", error);
-  }
-};
+      dispatch(setLoading(false));
+      console.log("Fetch data completed"); // Add this line to check if the action is completed
+    } catch (error) {
+      dispatch(setError("Error"));
+      console.log("Error uploading images:", error);
+    }
+  };
 
 //TODO Create file for cacheData and move methods
 

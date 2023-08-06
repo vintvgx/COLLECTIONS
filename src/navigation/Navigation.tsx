@@ -17,6 +17,7 @@ import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 import FeedView from "../view/LoggedIn/FeedView";
 import ProfileView from "../view/LoggedIn/ProfileView";
 import RegisterView from "../view/LoggedOut/RegisterView";
+import CreatorView from "../view/LoggedIn/CreatorView";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -150,7 +151,7 @@ export const HomeStack = () => {
       />
       <Tab.Screen
         name="+"
-        component={Creator}
+        component={CreatorView}
         options={{ headerShown: false }}
       />
       <Tab.Screen
