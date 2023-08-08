@@ -29,7 +29,8 @@ export interface ImageData {
 export interface ImageCollectionData {
   image: ImageData[];
   title: string;
-  createdAt: string;
+  createdAt?: string;
+  userData?: UserData;
 }
 
 export interface Collections extends ImageCollectionData {

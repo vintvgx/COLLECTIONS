@@ -18,6 +18,7 @@ import FeedView from "../view/LoggedIn/FeedView";
 import ProfileView from "../view/LoggedIn/ProfileView";
 import RegisterView from "../view/LoggedOut/RegisterView";
 import CreatorView from "../view/LoggedIn/CreatorView";
+import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -40,6 +41,10 @@ export type RootStackParams = {
   RegisterSplashScreen: any;
   Register: any;
   Home: any;
+  CollectionFeedView: {
+    title: string;
+    uid: string;
+  };
   Creator: any;
   ProfileSettings: any;
   PersonalDetails: any;
@@ -59,6 +64,11 @@ export const MAIN = () => {
         <MainStack.Screen
           name="Home"
           component={HomeStack}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="CollectionFeedView"
+          component={CollectionFeedView}
           options={{ headerShown: false }}
         />
         <MainStack.Screen

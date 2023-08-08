@@ -24,7 +24,7 @@ interface RenderItemProps {
 
 const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   const dispatch: AppDispatch = useDispatch();
-  const user = useSelector((state: RootState) => state.feed.userData);
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   /**
    * NOTE:
@@ -40,10 +40,6 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   );
   const imageUrl = item.image.uri;
 
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
-
   const handleImageLoadStart = () => {
     setIsImageLoading(true);
   };
@@ -51,10 +47,6 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   const handleImageLoad = () => {
     setIsImageLoading(false);
   };
-
-  useEffect(() => {
-    dispatch(fetchFeedUserData(item.image.uid));
-  }, [dispatch, item.image.uid]);
 
   const dateString = item.image.createdAt;
   const date = new Date(dateString);
@@ -77,7 +69,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
   return (
     <View>
       <View style={styles.collectionCard}>
-        <TouchableOpacity onPress={() => console.log(item)}>
+        <View>
           {/* {isImageLoading ? (
             <View style={styles.loadingContainer}>
               <Text>Loading</Text>
@@ -96,7 +88,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
             // onLoadEnd={handleImageLoad}
           />
           {/* )} */}
-        </TouchableOpacity>
+        </View>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ marginTop: 8, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
@@ -112,10 +104,10 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
               alignItems: "center",
             }}>
             {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
-            <Text style={{ color: "#777F88" }}>{user?.username}</Text>
+            <Text style={{ color: "#777F88" }}>{item.userData?.username}</Text>
             <TouchableOpacity style={styles.circle}>
               <Image
-                source={{ uri: user?.avatar.uri }}
+                source={{ uri: item.userData?.avatar.uri }}
                 style={styles.profileImage}
               />
             </TouchableOpacity>

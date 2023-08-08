@@ -18,9 +18,15 @@ import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
 import RenderItem from "../../components/RenderItem";
 import { logFeedData } from "../../utils/functions";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigation/Navigation";
 
 const FeedView: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
+
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
   const [loadingMore, setLoadingMore] = useState(false);
   const [feedCovers, setFeedCovers] = useState<ImageCollectionData[]>([]);
@@ -36,6 +42,7 @@ const FeedView: React.FC = () => {
 
   useEffect(() => {
     if (feedCollectionCovers) {
+      // logFeedData(feedCollectionCovers);
       // Adding only new feedCollectionCovers
       setFeedCovers((prevCovers) => [
         ...prevCovers,
@@ -47,6 +54,8 @@ const FeedView: React.FC = () => {
         ),
       ]);
     }
+
+    logFeedData(feedCovers);
   }, [feedCollectionCovers]);
 
   const fetchMoreFeedData = () => {
@@ -66,6 +75,19 @@ const FeedView: React.FC = () => {
     }
     setRefreshing(false); // Update the refreshing state after the dispatch completes
     // logFeedData(feedCollectionCovers);
+  };
+
+  const handleImagePress = (imageData: {
+    image?: { title?: string; uid?: string };
+  }) => {
+    if (imageData?.image) {
+      navigation.navigate("CollectionFeedView", {
+        title: imageData.image.title,
+        uid: imageData.image.uid,
+      });
+    } else {
+      console.error("Invalid imageData:", imageData);
+    }
   };
 
   return (
@@ -90,8 +112,18 @@ const FeedView: React.FC = () => {
           data={feedCovers}
           onEndReached={fetchMoreFeedData} // call function to fetch more data
           onEndReachedThreshold={0.2} // fetch more data when the end of the list is half a screen away
-          renderItem={({ item }) => <RenderItem item={item} />}
-          keyExtractor={(item) => item.image.fileName.toString()} // assuming each item has a unique id
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() =>
+                handleImagePress({
+                  image: { title: item.title, uid: item.image.uid },
+                })
+              }>
+              <RenderItem item={item} />
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => item.image.fileName.toString() + index}
         />
       </SafeAreaView>
     </View>
