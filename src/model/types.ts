@@ -6,15 +6,15 @@ export interface DataState {
   isLoading: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
+  needsReset: boolean;
   feedCollectionCovers: ImageCollectionData[] | undefined;
+  lastDoc: any;
+  userData: UserData | null;
 }
 
 export interface ImageData {
   assetId: string;
   id: number;
-  // base64?: null;
-  // duration?: null;
-  // exif?: null;
   title?: string;
   fileName: string;
   fileSizE: number;
@@ -22,15 +22,15 @@ export interface ImageData {
   type: string;
   uri: string;
   width: number;
-  time?: string;
-  date?: string;
+  createdAt: string;
   uid?: string;
 }
 
 export interface ImageCollectionData {
   image: ImageData[];
   title: string;
-  date: string;
+  createdAt?: string;
+  userData?: UserData;
 }
 
 export interface Collections extends ImageCollectionData {

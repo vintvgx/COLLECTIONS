@@ -45,3 +45,7 @@ export const handleSaveButtonPress = (
   setImageCount(images.length);
   setShowModal(true);
 };
+
+export function logFeedData(collection: ImageCollectionData[] | undefined) {
+  console.log("FEED DATA:", JSON.stringify(collection, null, 2));
+}

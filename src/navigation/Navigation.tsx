@@ -17,6 +17,8 @@ import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 import FeedView from "../view/LoggedIn/FeedView";
 import ProfileView from "../view/LoggedIn/ProfileView";
 import RegisterView from "../view/LoggedOut/RegisterView";
+import CreatorView from "../view/LoggedIn/CreatorView";
+import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -34,10 +36,15 @@ const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
 call : navigation.navigate("Home");
 */
+
 export type RootStackParams = {
   RegisterSplashScreen: any;
   Register: any;
   Home: any;
+  CollectionFeedView: {
+    title: string;
+    uid: string;
+  };
   Creator: any;
   ProfileSettings: any;
   PersonalDetails: any;
@@ -46,6 +53,7 @@ export type RootStackParams = {
 export type MainStackParams = {
   Home: any;
   ProfileSettings: any;
+  PersonalDetails: any;
 };
 
 //TODO: Add Collection Initial Page detailing App Functionality & Add to Register Stack
@@ -56,6 +64,11 @@ export const MAIN = () => {
         <MainStack.Screen
           name="Home"
           component={HomeStack}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="CollectionFeedView"
+          component={CollectionFeedView}
           options={{ headerShown: false }}
         />
         <MainStack.Screen
@@ -102,12 +115,20 @@ const getIconColor = (focused: boolean) => {
   return focused ? "#000" : "#aaa";
 };
 
+type IconName =
+  | "home"
+  | "home-outline"
+  | "add-circle"
+  | "add-circle-outline"
+  | "person"
+  | "person-outline";
+
 export const HomeStack = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
+          let iconName: IconName = "home-outline";
 
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
@@ -140,12 +161,12 @@ export const HomeStack = () => {
       />
       <Tab.Screen
         name="+"
-        component={Creator}
+        component={CreatorView}
         options={{ headerShown: false }}
       />
       <Tab.Screen
         name="Profile"
-        component={Profile}
+        component={ProfileView}
         options={{ headerShown: false }}
       />
     </Tab.Navigator>

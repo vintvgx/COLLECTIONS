@@ -20,9 +20,7 @@ import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as Permissions from "expo-permissions";
 
-interface ProfileSettingsProps extends ProfileUser {}
-
-const PersonalDetails: React.FC<ProfileSettingsProps> = () => {
+const PersonalDetails: React.FC = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const currentDateTime = new Date();

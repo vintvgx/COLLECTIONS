@@ -71,6 +71,7 @@ const Profile: React.FC = () => {
       );
 
       setFormattedData(covers);
+      console.log(formattedData);
     }
 
     fetchCollectionCovers();

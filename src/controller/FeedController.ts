@@ -1,6 +1,5 @@
 import { Dimensions } from "react-native";
 import { ImageCollectionData } from "../model/types";
-import Feed from "../view/LoggedIn/FeedView";
 
 class FeedController {
   static async calculateImageDimensions(

@@ -1,28 +1,35 @@
 import {
+  ActivityIndicator,
   FlatList,
   RefreshControl,
   SafeAreaView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import React, { useEffect, useState } from "react";
+
+import { AppDispatch } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
-import {
-  deleteCachedData,
-  fetchFeedData,
-} from "../../redux_toolkit/slices/retrieveFeedSlice";
+import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
 import RenderItem from "../../components/RenderItem";
+import { logFeedData } from "../../utils/functions";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigation/Navigation";
 
 const FeedView: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
+
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [feedCovers, setFeedCovers] = useState<ImageCollectionData[]>([]);
 
   const [refreshing, setRefreshing] = useState(false);
   const [updatedCollectionCovers, setUpdatedCollectionCovers] = useState<
@@ -30,37 +37,69 @@ const FeedView: React.FC = () => {
   >(null);
 
   useEffect(() => {
-    //@ts-ignore
     dispatch(fetchFeedData());
   }, [dispatch]);
 
   useEffect(() => {
-    updateCovers();
+    if (feedCollectionCovers) {
+      // logFeedData(feedCollectionCovers);
+      // Adding only new feedCollectionCovers
+      setFeedCovers((prevCovers) => [
+        ...prevCovers,
+        ...feedCollectionCovers.filter(
+          (cover) =>
+            !prevCovers.some(
+              (prevCover) => prevCover.image.fileName === cover.image.fileName
+            ) // assuming `id` is unique
+        ),
+      ]);
+    }
+
+    logFeedData(feedCovers);
   }, [feedCollectionCovers]);
 
-  const updateCovers = async () => {
-    const modifiedFeedCollectionCovers =
-      FeedController.collection_updateDateProp(feedCollectionCovers);
-    const sortedFeedCollectionCovers = FeedController.sortCollectionByDate(
-      await modifiedFeedCollectionCovers
-    );
-
-    setUpdatedCollectionCovers(await sortedFeedCollectionCovers);
+  const fetchMoreFeedData = () => {
+    setLoadingMore(true);
+    dispatch(fetchFeedData()).finally(() => {
+      setLoadingMore(false);
+    });
   };
 
-  const handleOnRefresh = () => {
-    //@ts-ignore
-    dispatch(fetchFeedData()).then(() => setRefreshing(false));
+  const handleOnRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await dispatch(fetchFeedData()); // Wait for the dispatch to complete
+    } catch (error) {
+      // Handle any errors that might occur during the dispatch
+      console.error(error);
+    }
+    setRefreshing(false); // Update the refreshing state after the dispatch completes
+    // logFeedData(feedCollectionCovers);
+  };
+
+  const handleImagePress = (imageData: {
+    image?: { title?: string; uid?: string };
+  }) => {
+    if (imageData?.image) {
+      navigation.navigate("CollectionFeedView", {
+        title: imageData.image.title,
+        uid: imageData.image.uid,
+      });
+    } else {
+      console.error("Invalid imageData:", imageData);
+    }
   };
 
   return (
     <View style={styles.container}>
       <SafeAreaView>
-        <View style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
-          <Text style={{ alignSelf: "center", fontSize: 25, fontWeight: 700 }}>
+        <TouchableOpacity
+          style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
+          <Text
+            style={{ alignSelf: "center", fontSize: 25, fontWeight: "700" }}>
             COLLECTIONS+
           </Text>
-        </View>
+        </TouchableOpacity>
         <FlatList
           refreshControl={
             <RefreshControl
@@ -68,8 +107,23 @@ const FeedView: React.FC = () => {
               onRefresh={handleOnRefresh}
             />
           }
-          data={updatedCollectionCovers}
-          renderItem={({ item }) => <RenderItem item={item} />}
+          showsVerticalScrollIndicator={false}
+          ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
+          data={feedCovers}
+          onEndReached={fetchMoreFeedData} // call function to fetch more data
+          onEndReachedThreshold={0.2} // fetch more data when the end of the list is half a screen away
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() =>
+                handleImagePress({
+                  image: { title: item.title, uid: item.image.uid },
+                })
+              }>
+              <RenderItem item={item} />
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => item.image.fileName.toString() + index}
         />
       </SafeAreaView>
     </View>

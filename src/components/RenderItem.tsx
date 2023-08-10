@@ -1,23 +1,30 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useAppSelector } from "../redux_toolkit";
-import { RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
+import { AppDispatch, RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
 
-import { selectFeedLoading } from "../redux_toolkit/slices/retrieveFeedSlice";
+import {
+  fetchFeedUserData,
+  selectFeedLoading,
+} from "../redux_toolkit/slices/retrieveFeedSlice";
 
 import CustomCachedImage from "../components/CustomCachedImage";
 import { calculateImageHeight } from "../utils/image";
 // import CachedImage from "expo-cached-image";
 import CachedImage from "react-native-image-cache-wrapper";
 import FeedSkeletonView from "./FeedSkeletonView";
+import { db } from "../utils/firebase/f9_config";
+import { doc, getDoc } from "firebase/firestore";
+import { UserData } from "../model/types";
 
 interface RenderItemProps {
   item: any;
 }
 
 const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
-  const dispatch = useDispatch();
+  const dispatch: AppDispatch = useDispatch();
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   /**
    * NOTE:
@@ -32,11 +39,6 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     item.image.height
   );
   const imageUrl = item.image.uri;
-  const cacheKey = `feed-cache-data-${imageUrl}`;
-
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
 
   const handleImageLoadStart = () => {
     setIsImageLoading(true);
@@ -46,16 +48,28 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     setIsImageLoading(false);
   };
 
-  if (isLoading) {
-    return <FeedSkeletonView />;
-  }
+  const dateString = item.image.createdAt;
+  const date = new Date(dateString);
+
+  const userFriendlyDate = date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
+  // if (isLoading) {
+  //   return <FeedSkeletonView />;
+  // }
 
   //TODO Fix LOADING component when image is loading // handleImageLoad
   //TODO: Convert back to CachedImage / look up file location set&get
   return (
     <View>
       <View style={styles.collectionCard}>
-        <TouchableOpacity onPress={() => console.log(item)}>
+        <View>
           {/* {isImageLoading ? (
             <View style={styles.loadingContainer}>
               <Text>Loading</Text>
@@ -74,11 +88,12 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
             // onLoadEnd={handleImageLoad}
           />
           {/* )} */}
-        </TouchableOpacity>
+        </View>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <View style={{ marginTop: 8, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
             <Text style={styles.views}>234 views</Text>
+            <Text style={styles.views}>{userFriendlyDate}</Text>
           </View>
 
           <View
@@ -89,12 +104,12 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
               alignItems: "center",
             }}>
             {/* <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} /> */}
-            <Text style={{ color: "#777F88" }}>{username}</Text>
+            <Text style={{ color: "#777F88" }}>{item.userData?.username}</Text>
             <TouchableOpacity style={styles.circle}>
-              {/* <Image
-                    source={{ uri: avatar.uri }}
-                    style={styles.profileImage}
-                  /> */}
+              <Image
+                source={{ uri: item.userData?.avatar.uri }}
+                style={styles.profileImage}
+              />
             </TouchableOpacity>
           </View>
         </View>
@@ -110,7 +125,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     height: 200, // Set an appropriate height while loading
   },
-  // Rest of your styles
   collectionCard: {
     flex: 1,
     marginBottom: 75,
@@ -134,6 +148,13 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     // marginBottom: 10,
     // marginTop: 15,
+  },
+  profileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 45,
+    flex: 1,
+    resizeMode: "cover",
   },
 });
 
