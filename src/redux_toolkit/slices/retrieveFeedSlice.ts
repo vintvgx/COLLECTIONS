@@ -60,6 +60,9 @@ const feedSlice = createSlice({
     resetLastDoc: (state) => {
       state.lastDoc = null;
     },
+    addImageToCollection: (state, action: PayloadAction<any>) => {
+      state.collectionsData.push(action.payload);
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
       state.error = null;
@@ -74,8 +77,12 @@ const feedSlice = createSlice({
       state.userData = action.payload;
     });
     builder.addCase(fetchCollectionData.fulfilled, (state, action) => {
-      state.collectionsData = action.payload.collectionData;
+      state.collectionsData = action.payload.dataCollection;
       state.userData = action.payload.userData; // Assuming you have a userData field in your state
+    });
+    builder.addCase(fetchCollectionData.rejected, (state, action) => {
+      // Handle the error here, perhaps by setting an error message in your state
+      state.error = action.error.message;
     });
   },
 });
@@ -85,6 +92,7 @@ export const {
   setFeedCollectionCovers,
   setLastDoc,
   resetLastDoc,
+  addImageToCollection,
   setLoading,
   setError,
 } = feedSlice.actions;
@@ -214,30 +222,71 @@ export const fetchCollectionData = createAsyncThunk(
     // Example:
     const dispatch = thunkAPI.dispatch;
     try {
+      console.log;
+      const pathRef = `feed/allUsers/files/${params.title}/images`;
+      const collectionRef = collection(db, pathRef);
+      const collectionSnapshot = await getDocs(collectionRef);
+      const userData = await dispatch(fetchFeedUserData(params.uid)).unwrap();
+      console.log(`PARAM TITLE: ${params.title}`);
+
+      const dataCollection: ImageCollectionData[] = [];
+
+      collectionSnapshot.docs.map(async (doc) => {
+        dataCollection.push({
+          image: doc.data(),
+          title: doc.data().title,
+          createdAt: doc.data().createdAt,
+          userData: userData,
+        });
+      });
+
+      console.log(dataCollection);
+      // const collectionData: ImageCollectionData[] = await Promise.all(
+      //   collectionSnapshot.docs.map(async (doc) => {
+      //     console.log(doc.data());
+      //     return {
+      //       image: doc.data(),
+      //       title: doc.data().title,
+      //       createdAt: doc.data().createdAt,
+      //       // userData: userData,
+      //     };
+      //   })
+      // );
+
+      // console.log(`TITLE ${dataCollection[1]}`);
+      return { dataCollection, userData };
+    } catch (error) {
+      console.error("fetchCollectionData ERROR:", error);
+      return Promise.reject(error);
+    }
+  }
+);
+
+export const fetchCollectionImage = createAsyncThunk(
+  "feed/fetchCollectionData",
+  async (params: { title: string; uid: string }, thunkAPI) => {
+    const dispatch = thunkAPI.dispatch;
+    try {
       const pathRef = `feed/allUsers/files/${params.title}/images`;
       const collectionRef = collection(db, pathRef);
       const collectionSnapshot = await getDocs(collectionRef);
       const userData = await dispatch(fetchFeedUserData(params.uid)).unwrap();
 
-      const collectionData: ImageCollectionData[] = await Promise.all(
-        collectionSnapshot.docs.map(async (doc) => {
-          console.log(doc.data().title);
-          const userData = await dispatch(
-            fetchFeedUserData(params.uid)
-          ).unwrap();
-          return {
-            image: doc.data(),
-            title: doc.data().title,
-            createdAt: doc.data().createdAt,
-            userData: userData,
-          };
-        })
-      );
+      collectionSnapshot.docs.map(async (doc) => {
+        const imageCollectionData = {
+          image: doc.data(),
+          title: doc.data().title,
+          createdAt: doc.data().createdAt,
+          userData: userData,
+        };
 
-      console.log(`TITLE ${collectionData.title}`);
-      return { collectionData, userData };
+        // Dispatch individual image to the collection
+        dispatch(addImageToCollection(imageCollectionData));
+      });
+
+      return { userData };
     } catch (error) {
-      console.error("fetchCollectionData ERROR:", error);
+      console.error("fetchCollectionImage ERROR:", error);
     }
   }
 );
