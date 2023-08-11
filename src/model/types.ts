@@ -83,3 +83,11 @@ export interface UserState extends UserData {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface ViewToken {
+  item: any; // This will be the data item from your FlatList data prop.
+  key: string; // The key for the item.
+  index: number | null; // Index of the item in the data array.
+  isViewable: boolean; // Whether the item is currently viewable.
+  section?: any; // If using sections in FlatList, this will be the section data.
+}

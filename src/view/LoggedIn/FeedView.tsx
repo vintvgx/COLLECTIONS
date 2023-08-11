@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Animated,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -30,6 +31,8 @@ const FeedView: React.FC = () => {
   const { feedCollectionCovers } = useAppSelector(({ feed }) => feed);
   const [loadingMore, setLoadingMore] = useState(false);
   const [feedCovers, setFeedCovers] = useState<ImageCollectionData[]>([]);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const animatedScrollPosition = new Animated.Value(0);
 
   const [refreshing, setRefreshing] = useState(false);
   const [updatedCollectionCovers, setUpdatedCollectionCovers] = useState<
@@ -90,42 +93,69 @@ const FeedView: React.FC = () => {
     }
   };
 
+  const headerHeight = animatedScrollPosition.interpolate({
+    inputRange: [0, 100],
+    outputRange: [30, 0],
+    extrapolate: "clamp",
+  });
+  const headerOpacity = animatedScrollPosition.interpolate({
+    inputRange: [0, 100],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+  const headerFontSize = animatedScrollPosition.interpolate({
+    inputRange: [0, 100],
+    outputRange: [25, 0],
+    extrapolate: "clamp",
+  });
+
   return (
     <View style={styles.container}>
-      <SafeAreaView>
-        <TouchableOpacity
-          style={{ height: 30, marginTop: 20, marginBottom: 20 }}>
+      <Animated.View
+        style={{
+          height: headerHeight,
+          marginTop: headerHeight,
+          marginBottom: 20,
+          opacity: headerOpacity,
+        }}>
+        <TouchableOpacity>
           <Text
-            style={{ alignSelf: "center", fontSize: 25, fontWeight: "700" }}>
+            style={{
+              alignSelf: "center",
+              fontSize: scrollPosition > 100 ? 0 : 25,
+              fontWeight: "700",
+            }}>
             COLLECTIONS+
           </Text>
         </TouchableOpacity>
-        <FlatList
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleOnRefresh}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-          ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
-          data={feedCovers}
-          onEndReached={fetchMoreFeedData} // call function to fetch more data
-          onEndReachedThreshold={0.2} // fetch more data when the end of the list is half a screen away
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              activeOpacity={1}
-              onPress={() =>
-                handleImagePress({
-                  image: { title: item.title, uid: item.image.uid },
-                })
-              }>
-              <RenderItem item={item} />
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item, index) => item.image.fileName.toString() + index}
-        />
-      </SafeAreaView>
+      </Animated.View>
+
+      <Animated.FlatList
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleOnRefresh} />
+        }
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: animatedScrollPosition } } }], // Notice the change here
+          { useNativeDriver: false } // Make sure to set this to false
+        )}
+        ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
+        data={feedCovers}
+        onEndReached={fetchMoreFeedData} // call function to fetch more data
+        onEndReachedThreshold={0.9} // fetch more data when the end of the list is half a screen away
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            activeOpacity={1}
+            onPress={() =>
+              handleImagePress({
+                image: { title: item.title, uid: item.image.uid },
+              })
+            }>
+            <RenderItem item={item} />
+          </TouchableOpacity>
+        )}
+        keyExtractor={(item, index) => item.image.fileName.toString() + index}
+      />
     </View>
   );
 };
@@ -135,7 +165,9 @@ export default FeedView;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: 40,
   },
+
   body: {
     flex: 9,
     justifyContent: "center",
