@@ -8,6 +8,8 @@ import {
   Animated,
   TouchableOpacity,
   ViewToken,
+  StatusBar,
+  Platform,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -21,7 +23,10 @@ import { calculateImageHeight } from "../../utils/image";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-const sharedBackgroundColor = "orange";
+const sharedBackgroundColor = "white";
+const sharedFontColor = "black";
+const STATUS_BAR_HEIGHT =
+  Platform.OS === "android" ? StatusBar.currentHeight : 20;
 
 // Define your Stack Navigator Param List
 type RootStackParamList = {
@@ -72,7 +77,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
 
   const headerHeight = scrollY.interpolate({
     inputRange: [0, 200], // adjust this based on your needs
-    outputRange: [200, 80], // start height and end height
+    outputRange: [200, 0], // start height and end height
     extrapolate: "clamp",
   });
 
@@ -88,9 +93,15 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   //   extrapolate: "clamp",
   // });
 
+  const headerTitleFade = scrollY.interpolate({
+    inputRange: [190, 300], // it'll start changing just 10 units before it reaches 200
+    outputRange: [0, 1], // 0 opacity for most of the scrolling until it reaches near 200, then suddenly goes to 1.
+    extrapolate: "clamp",
+  });
+
   const titleMarginLeft = scrollY.interpolate({
     inputRange: [0, 200],
-    outputRange: [0, 50], // Adjust if necessary based on screen width and text width
+    outputRange: [0, 0], // Adjust if necessary based on screen width and text width
     extrapolate: "clamp",
   });
 
@@ -143,7 +154,11 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
+      <StatusBar
+        backgroundColor={sharedBackgroundColor}
+        barStyle="dark-content"
+      />
       {showTitle ? (
         <View
           style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
@@ -165,13 +180,20 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
         <View>
           <View style={styles.header}>
             {/*Header*/}
-            <Text>{`${currentItemIndex}/${dataCollection?.length}`}</Text>
+            <Text
+              style={{
+                color: sharedFontColor,
+              }}>{`${currentItemIndex}/${dataCollection?.length}`}</Text>
+            <Animated.Text
+              style={[styles.header_title_text, { opacity: headerTitleFade }]}>
+              {title}
+            </Animated.Text>
             <View style={styles.rightIcons}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Feather name="menu" size={20} color="#000"></Feather>
+                <Feather name="menu" size={20} color="white"></Feather>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text>Done</Text>
+                <Text style={{ color: sharedFontColor }}>Done</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -207,7 +229,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
           />
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -218,7 +240,8 @@ const styles = StyleSheet.create({
     flex: 1,
     // justifyContent: "center",
     // alignItems: "center", // This will center the content horizontally
-    backgroundColor: "#FFF",
+    backgroundColor: "white",
+    paddingTop: STATUS_BAR_HEIGHT,
   },
   header: {
     height: 45,
@@ -233,17 +256,25 @@ const styles = StyleSheet.create({
     alignItems: "center", // Vertically center align items
     justifyContent: "space-between", // Space the items apart
     width: 65, // You might want to adjust this based on your needs.
+    color: sharedFontColor,
   },
   contentDetails: {
     // remove any specific height
     alignItems: "flex-start", // center align horizontally
     justifyContent: "center",
+    color: sharedFontColor,
   },
   title_text: {
     fontSize: 30,
     fontWeight: "bold",
-    color: "#000",
+    color: sharedFontColor,
+
     // textAlign: "left", // align left within Text component
+  },
+  header_title_text: {
+    fontSize: 15,
+    fontWeight: "bold",
+    color: sharedFontColor,
   },
   username_text: {
     fontSize: 15,
