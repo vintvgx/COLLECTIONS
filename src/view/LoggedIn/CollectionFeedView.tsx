@@ -145,7 +145,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
               flex: 1,
             }}
           />
-          <Text>{item.image.fileName}</Text>
+          {/* <Text>{item.image.fileName}</Text> */}
         </View>
       );
     } else {
@@ -154,7 +154,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar
         backgroundColor={sharedBackgroundColor}
         barStyle="dark-content"
@@ -180,17 +180,17 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
         <View>
           <View style={styles.header}>
             {/*Header*/}
-            <Text
-              style={{
-                color: sharedFontColor,
-              }}>{`${currentItemIndex}/${dataCollection?.length}`}</Text>
+            <Animated.Text
+              style={{ color: sharedFontColor, opacity: headerTitleFade }}>
+              {`${currentItemIndex}/${dataCollection?.length}`}
+            </Animated.Text>
             <Animated.Text
               style={[styles.header_title_text, { opacity: headerTitleFade }]}>
               {title}
             </Animated.Text>
             <View style={styles.rightIcons}>
               <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Feather name="menu" size={20} color="white"></Feather>
+                <Feather name="menu" size={20} color="black"></Feather>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => navigation.goBack()}>
                 <Text style={{ color: sharedFontColor }}>Done</Text>
@@ -229,7 +229,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
           />
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -241,7 +241,7 @@ const styles = StyleSheet.create({
     // justifyContent: "center",
     // alignItems: "center", // This will center the content horizontally
     backgroundColor: "white",
-    paddingTop: STATUS_BAR_HEIGHT,
+    // paddingTop: STATUS_BAR_HEIGHT,
   },
   header: {
     height: 45,

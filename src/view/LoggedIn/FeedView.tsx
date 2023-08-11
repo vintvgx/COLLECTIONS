@@ -139,9 +139,6 @@ const FeedView: React.FC = () => {
           [{ nativeEvent: { contentOffset: { y: animatedScrollPosition } } }], // Notice the change here
           { useNativeDriver: false } // Make sure to set this to false
         )}
-        // onScroll={(e) => {
-        //   setScrollPosition(e.nativeEvent.contentOffset.y);
-        // }}
         ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
         data={feedCovers}
         onEndReached={fetchMoreFeedData} // call function to fetch more data

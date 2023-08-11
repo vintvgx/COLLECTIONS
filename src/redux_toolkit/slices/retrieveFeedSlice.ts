@@ -262,6 +262,8 @@ export const fetchCollectionData = createAsyncThunk(
   }
 );
 
+console.log();
+
 export const fetchCollectionImage = createAsyncThunk(
   "feed/fetchCollectionData",
   async (params: { title: string; uid: string }, thunkAPI) => {
