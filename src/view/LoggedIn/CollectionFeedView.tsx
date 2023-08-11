@@ -23,6 +23,9 @@ import { calculateImageHeight } from "../../utils/image";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
+//components
+import CollectionFeedViewHeader from "../../components/CollectionFeedViewHeader";
+
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
 const STATUS_BAR_HEIGHT =
@@ -178,25 +181,13 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
         </View>
       ) : (
         <View>
-          <View style={styles.header}>
-            {/*Header*/}
-            <Animated.Text
-              style={{ color: sharedFontColor, opacity: headerTitleFade }}>
-              {`${currentItemIndex}/${dataCollection?.length}`}
-            </Animated.Text>
-            <Animated.Text
-              style={[styles.header_title_text, { opacity: headerTitleFade }]}>
-              {title}
-            </Animated.Text>
-            <View style={styles.rightIcons}>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Feather name="menu" size={20} color="black"></Feather>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text style={{ color: sharedFontColor }}>Done</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          <CollectionFeedViewHeader
+            title={title}
+            headerTitleFade={headerTitleFade}
+            currentItemIndex={currentItemIndex}
+            dataCollectionLength={dataCollection?.length || 0}
+            sharedFontColor={sharedFontColor}
+          />
           <Animated.View
             style={[
               styles.contentDetails,
