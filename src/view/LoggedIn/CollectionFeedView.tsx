@@ -6,8 +6,10 @@ import {
   Image,
   FlatList,
   Animated,
+  TouchableOpacity,
+  ViewToken,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { RootStackParams } from "../../navigation/Navigation";
@@ -16,6 +18,10 @@ import { AppDispatch, RootState } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
 import { fetchCollectionData } from "../../redux_toolkit/slices/retrieveFeedSlice";
 import { calculateImageHeight } from "../../utils/image";
+import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+
+const sharedBackgroundColor = "orange";
 
 // Define your Stack Navigator Param List
 type RootStackParamList = {
@@ -32,12 +38,14 @@ type CollectionFeedViewProps = {
 
 const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   const dispatch: AppDispatch = useDispatch();
+  const navigation = useNavigation();
+
   const { title, uid } = route.params;
   const dataCollection = useSelector(
     (state: RootState) => state.feed.collectionsData
   );
   const [showTitle, setShowTitle] = useState(true);
-  const fadeAnim = new Animated.Value(1);
+  const [currentItemIndex, setCurrentItemIndex] = useState(1);
   const scrollY = new Animated.Value(0);
   const userData = useSelector((state: RootState) => state.feed.userData);
 
@@ -86,6 +94,18 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
     extrapolate: "clamp",
   });
 
+  const viewableItemsChanged = useRef(
+    (info: { viewableItems: ViewToken[]; changed: ViewToken[] }) => {
+      // Only update when there's at least one item
+      if (
+        info.viewableItems.length > 0 &&
+        info.viewableItems[0].index !== null
+      ) {
+        setCurrentItemIndex(info.viewableItems[0].index + 1); // +1 because arrays are 0-indexed
+      }
+    }
+  ).current;
+
   dataCollection?.map((doc) => {
     console.log(`data doc: ${doc.image?.fileName}`);
   });
@@ -123,31 +143,59 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {showTitle ? (
         <View
           style={{ alignItems: "center", justifyContent: "center", flex: 1 }}>
-          <Text style={styles.text}>{title}</Text>
+          <Text style={styles.title_text}>{title}</Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              marginTop: 8,
+            }}>
+            <Image
+              source={{ uri: userData?.avatar.uri }}
+              style={styles.profileImage}
+            />
+            <Text style={styles.username_text}>{userData?.username}</Text>
+          </View>
         </View>
       ) : (
         <View>
+          <View style={styles.header}>
+            {/*Header*/}
+            <Text>{`${currentItemIndex}/${dataCollection?.length}`}</Text>
+            <View style={styles.rightIcons}>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Feather name="menu" size={20} color="#000"></Feather>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Text>Done</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
           <Animated.View
             style={[
-              styles.header,
+              styles.contentDetails,
               {
                 height: headerHeight,
-                backgroundColor: "orange",
+                backgroundColor: sharedBackgroundColor,
               },
             ]}>
             <Animated.Text
               style={[
-                styles.text,
+                styles.title_text,
                 { opacity: titleOpacity, marginLeft: titleMarginLeft },
               ]}>
               {title}
             </Animated.Text>
           </Animated.View>
           <FlatList
+            onViewableItemsChanged={viewableItemsChanged}
+            viewabilityConfig={{
+              itemVisiblePercentThreshold: 50, // adjust this value as needed
+            }}
             data={dataCollection}
             renderItem={renderImageItem}
             keyExtractor={(item, index) => index.toString()}
@@ -159,7 +207,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
           />
         </View>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -173,12 +221,32 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFF",
   },
   header: {
+    height: 45,
+    flexDirection: "row", // Use row direction to allow items to be aligned horizontally
+    justifyContent: "space-between", // This pushes your icon to the right
+    paddingHorizontal: 10, // A little padding to ensure it doesn't touch the very edge
+    alignItems: "center", // This ensures it's vertically centered
+    backgroundColor: sharedBackgroundColor,
+  },
+  rightIcons: {
+    flexDirection: "row", // Horizontal alignment
+    alignItems: "center", // Vertically center align items
+    justifyContent: "space-between", // Space the items apart
+    width: 65, // You might want to adjust this based on your needs.
+  },
+  contentDetails: {
     // remove any specific height
-    alignItems: "left", // center align horizontally
+    alignItems: "flex-start", // center align horizontally
     justifyContent: "center",
   },
-  text: {
+  title_text: {
     fontSize: 30,
+    fontWeight: "bold",
+    color: "#000",
+    // textAlign: "left", // align left within Text component
+  },
+  username_text: {
+    fontSize: 15,
     fontWeight: "bold",
     color: "#000",
     // textAlign: "left", // align left within Text component
@@ -187,5 +255,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     flex: 1,
+  },
+  profileImage: {
+    width: 30,
+    height: 30,
+    borderRadius: 45,
+    // flex: 1,
+    resizeMode: "cover",
+    marginRight: 10,
   },
 });
