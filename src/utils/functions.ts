@@ -1,3 +1,4 @@
+import { Animated } from "react-native";
 import { ImageCollectionData } from "../model/types";
 
 /**
@@ -49,3 +50,35 @@ export const handleSaveButtonPress = (
 export function logFeedData(collection: ImageCollectionData[] | undefined) {
   console.log("FEED DATA:", JSON.stringify(collection, null, 2));
 }
+
+export const getHeaderHeight = (scrollY: Animated.Value) => {
+  return scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [200, 0],
+    extrapolate: "clamp",
+  });
+};
+
+export const getTitleOpacity = (scrollY: Animated.Value) => {
+  return scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [1, 0],
+    extrapolate: "clamp",
+  });
+};
+
+export const getHeaderTitleFade = (scrollY: Animated.Value) => {
+  return scrollY.interpolate({
+    inputRange: [190, 300],
+    outputRange: [0, 1],
+    extrapolate: "clamp",
+  });
+};
+
+export const getTitleMarginLeft = (scrollY: Animated.Value) => {
+  return scrollY.interpolate({
+    inputRange: [0, 200],
+    outputRange: [0, 0], // Adjust if necessary based on screen width and text width
+    extrapolate: "clamp",
+  });
+};
