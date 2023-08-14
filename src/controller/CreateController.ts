@@ -15,7 +15,7 @@ class CreateController {
 
     if (!result.canceled) {
       return result.assets;
-    }
+    } else return;
   }
 
   static async TAKE_PHOTO() {
@@ -29,7 +29,7 @@ class CreateController {
 
     if (!result.canceled) {
       return result.assets;
-    }
+    } else return;
   }
 
   static async HANDLE_CONFIRM_BUTTON_PRESSED(

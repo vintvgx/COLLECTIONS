@@ -86,17 +86,19 @@ const CreatorView: React.FC<CreatorTypes> = () => {
   const takePhoto = async () => {
     const takenImages = await CreateController.TAKE_PHOTO();
 
-    // After taking the photo, navigate to the AddCollectionView
-    navigation.navigate("AddCollectionView", { images: takenImages });
+    if (takenImages) {
+      navigation.navigate("AddCollectionView", { images: takenImages });
+    }
   };
 
   const addCollection = async () => {
     const selectedImages = await CreateController.ADD_COLLECTION();
-    console.log("CreatorViewIMAGES_SELECTED:", selectedImages);
+    if (selectedImages) {
+      console.log("CreatorViewIMAGES_SELECTED:", selectedImages);
 
-    // After adding to the collection, navigate to the AddCollectionView
-    navigation.navigate("AddCollectionView", { images: selectedImages });
-    // setImages([]);
+      // After adding to the collection, navigate to the AddCollectionView
+      navigation.navigate("AddCollectionView", { images: selectedImages });
+    }
   };
 
   return (

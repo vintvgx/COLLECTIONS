@@ -102,26 +102,6 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
         />
       </View>
       <View>
-        {/* <FlatList
-          pagingEnabled
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={images}
-          renderItem={({ item }) => (
-            <View style={styles.flatlist_container}>
-              <TouchableOpacity
-                onPress={() => {
-                  setCover(item.uri);
-                }}>
-                <Image
-                  source={{ uri: item.uri }}
-                  // keyExtractor={(item, index) => item.fileName}
-                  style={styles.flatlist_image}
-                />
-              </TouchableOpacity>
-            </View>
-          )}
-        /> */}
         <DraggableFlatList
           data={imageList}
           renderItem={({
@@ -153,13 +133,22 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
       <Modal visible={showModal} animationType="slide" transparent>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Collection Details</Text>
-            <TextInput
-              style={styles.textInput}
-              placeholder="Collection Title"
-              value={collectionTitle}
-              onChangeText={setCollectionTitle}
-            />
+            {/* Added cover image and TextInput in the modal */}
+            <View style={styles.coverContainer}>
+              <Image
+                source={{ uri: cover }}
+                style={styles.modalCoverImage}
+                onError={(error) => console.log(error)}
+              />
+              <TextInput
+                style={styles.titleInput}
+                placeholder="Collection Title"
+                placeholderTextColor="white"
+                value={collectionTitle}
+                onChangeText={setCollectionTitle}
+              />
+            </View>
+
             <Text style={styles.modalSubtitle}>Image Count: {imageCount}</Text>
             <Text style={styles.modalSubtitle}>
               Created At: {new Date(currentDateTime).toLocaleString()}
@@ -210,6 +199,29 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     alignSelf: "center",
   },
+  modalCoverImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  coverContainer: {
+    width: "100%",
+    height: 200, // Adjust as needed
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20, // Space after the cover
+  },
+  titleInput: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    width: "80%", // Adjust as needed
+    backgroundColor: "rgba(0,0,0,0.3)", // Slight transparent black background for readability
+    padding: 8,
+    borderRadius: 10,
+  },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
@@ -224,6 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     elevation: 5,
     width: "70%",
+    height: "auto",
   },
   modalTitle: {
     fontSize: 20,
