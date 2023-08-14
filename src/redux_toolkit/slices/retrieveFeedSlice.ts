@@ -185,7 +185,7 @@ export const fetchFeedData =
 
       const feedCollectionCoversPromises = feedCollectionData.map(
         async (collection) => {
-          const cover = collection[0];
+          const cover = collection.find((image) => image.image.id === 0);
           if (cover) {
             const userData = await dispatch(
               fetchFeedUserData(cover.image.uid)
@@ -261,8 +261,6 @@ export const fetchCollectionData = createAsyncThunk(
     }
   }
 );
-
-console.log();
 
 export const fetchCollectionImage = createAsyncThunk(
   "feed/fetchCollectionData",

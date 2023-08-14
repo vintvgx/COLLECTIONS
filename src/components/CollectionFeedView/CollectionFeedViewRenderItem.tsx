@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     flex: 1,
+    paddingHorizontal: 20,
   },
   imageStyles: {
     width: "100%",

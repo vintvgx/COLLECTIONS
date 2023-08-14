@@ -4,9 +4,7 @@ import { ImageCollectionData, ImageData } from "../model/types";
 import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 
 class CreateController {
-  static async ADD_COLLECTION(
-    setImages: React.Dispatch<React.SetStateAction<ImageData[]>>
-  ) {
+  static async ADD_COLLECTION() {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: false,
@@ -16,23 +14,21 @@ class CreateController {
     });
 
     if (!result.canceled) {
-      setImages(result.assets);
+      return result.assets;
     }
   }
 
-  static async TAKE_PHOTO(
-    setImages: React.Dispatch<React.SetStateAction<ImageData[]>>
-  ) {
+  static async TAKE_PHOTO() {
     const result = await ImagePicker.launchCameraAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
       allowsMultipleSelection: true,
-      selectionLimit: 20 - images.length,
+      selectionLimit: 20,
     });
 
     if (!result.canceled) {
-      setImages(result.assets);
+      return result.assets;
     }
   }
 
@@ -42,7 +38,6 @@ class CreateController {
     setCollectionTitle: React.Dispatch<React.SetStateAction<string>>,
     setImageCount: React.Dispatch<React.SetStateAction<number>>,
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
-    setImages: React.Dispatch<React.SetStateAction<ImageData[]>>,
     currentTimestamp: string, // Adjust the type as necessary
     dispatch: Function
   ) {
@@ -51,8 +46,10 @@ class CreateController {
     }
 
     try {
+      const sortedImages = images.sort((a, b) => a.id - b.id);
+
       const dataState: ImageCollectionData = {
-        image: images.map((image, index) => ({
+        image: sortedImages.map((image, index) => ({
           ...image,
           id: index,
           title: collectionTitle,
@@ -64,13 +61,13 @@ class CreateController {
 
       if (collectionTitle == "") {
         console.log("ENTER TITLE U DWEEB!");
+        alert("So we just not gone put a title?");
       } else {
         // @ts-ignore
         await dispatch(addCollectionData(dataState));
         setCollectionTitle("");
         setImageCount(0);
         setShowModal(false);
-        setImages([]);
       }
     } catch (error) {
       console.log("Error:", error);
@@ -86,6 +83,10 @@ class CreateController {
     setCollectionTitle("");
     setImageCount(images.length);
     setShowModal(true);
+  }
+
+  static HANDLE_BACK_BUTTON_PRESSED(navigation: any) {
+    navigation.goBack();
   }
 }
 
