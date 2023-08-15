@@ -90,7 +90,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
           {/* )} */}
         </View>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
-          <View style={{ marginTop: 8, marginLeft: 5 }}>
+          <View style={{ marginTop: 2, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
             {/* <Text style={styles.views}>234 views</Text>
             <Text style={styles.views}>{userFriendlyDate}</Text> */}
@@ -128,6 +128,7 @@ const styles = StyleSheet.create({
   collectionCard: {
     flex: 1,
     marginBottom: 75,
+    paddingHorizontal: 15,
   },
   title: {
     // fontFamily: "Arial Black",

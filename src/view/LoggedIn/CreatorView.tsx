@@ -14,19 +14,31 @@ import {
 import React, { useEffect, useState } from "react";
 
 import { useDispatch } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import CreateController from "../../controller/CreateController";
 import { ImageData } from "../../model/types";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigation/Navigation";
+import AddCollectionView from "./AddCollectionView";
 
-const CreatorView: React.FC = () => {
+type CreatorTypes = {
+  images: ImageData[];
+};
+
+const CreatorView: React.FC<CreatorTypes> = () => {
+  const dispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
+
   const [images, setImages] = useState<ImageData[]>([]);
   const [cover, setCover] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
   const [imageCount, setImageCount] = useState(0);
+
   const currentDateTime = new Date();
   const currentTimestamp = new Date().toISOString();
-  const dispatch = useDispatch();
 
   useEffect(() => {
     const getPermissions = async () => {
@@ -53,7 +65,6 @@ const CreatorView: React.FC = () => {
       setCollectionTitle,
       setImageCount,
       setShowModal,
-      setImages,
       currentTimestamp,
       dispatch
     );
@@ -68,147 +79,94 @@ const CreatorView: React.FC = () => {
     );
   };
 
+  const handleBackButtonPress = () => {
+    CreateController.HANDLE_BACK_BUTTON_PRESSED(setImages, setCover);
+  };
+
   const takePhoto = async () => {
-    await CreateController.TAKE_PHOTO(setImages);
+    const takenImages = await CreateController.TAKE_PHOTO();
+
+    if (takenImages) {
+      navigation.navigate("AddCollectionView", { images: takenImages });
+    }
   };
 
   const addCollection = async () => {
-    await CreateController.ADD_COLLECTION(setImages);
-    console.log(images);
+    const selectedImages = await CreateController.ADD_COLLECTION();
+    if (selectedImages) {
+      console.log("CreatorViewIMAGES_SELECTED:", selectedImages);
+
+      // After adding to the collection, navigate to the AddCollectionView
+      navigation.navigate("AddCollectionView", { images: selectedImages });
+    }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      {images.length == 0 ? (
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity
+      <View style={{ flex: 1 }}>
+        <TouchableOpacity
+          style={{
+            flex: 5,
+          }}
+          onPress={addCollection}>
+          <SafeAreaView
             style={{
-              flex: 5,
-            }}
-            onPress={addCollection}>
-            <SafeAreaView
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                shadowColor: "#000", // Set the shadow color to black
-                shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
-                shadowOpacity: 0.5, // Set the shadow opacity
-                // elevation: 2, // Set the elevation for Android
-              }}>
-              <Image
-                source={require("../../../assets/stature.jpg")}
-                style={{
-                  flexGrow: 1,
-
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "30%",
-                  width: "90%",
-                  borderRadius: 5,
-                }}
-              />
-
-              <Text
-                style={{
-                  textAlign: "center",
-                  position: "absolute",
-                  fontSize: 50,
-                  color: "white",
-                  top: "20%",
-                  width: "95%",
-                }}>
-                Collection+
-              </Text>
-            </SafeAreaView>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              width: 150,
-              height: 50,
-              margin: 20,
-              backgroundColor: "#212121", // Set the background color to dark gray
-              borderRadius: 10,
-              paddingHorizontal: 20,
-              paddingVertical: 15,
+              flex: 1,
+              justifyContent: "center",
+              alignItems: "center",
               shadowColor: "#000", // Set the shadow color to black
               shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
               shadowOpacity: 0.5, // Set the shadow opacity
-              shadowRadius: 2, // Set the shadow radius
-              elevation: 2, // Set the elevation for Android
-              justifyContent: "center",
-              alignSelf: "center",
-              alignItems: "center",
-            }}
-            onPress={takePhoto}>
-            <Text style={{ color: "white" }}>Camera</Text>
-          </TouchableOpacity>
-        </View>
-      ) : (
-        <View style={{ flex: 1 }}>
-          <TouchableOpacity
-            onPress={handleSaveButtonPress}
-            style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Save</Text>
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Image source={{ uri: cover }} style={styles.cover_image} />
-          </View>
-          <View>
-            <FlatList
-              pagingEnabled
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              data={images}
-              renderItem={({ item }) => (
-                <View style={styles.flatlist_container}>
-                  <TouchableOpacity
-                    onPress={() => {
-                      setCover(item.uri);
-                    }}>
-                    <Image
-                      source={{ uri: item.uri }}
-                      // keyExtractor={(item, index) => item.fileName}
-                      style={styles.flatlist_image}
-                    />
-                  </TouchableOpacity>
-                </View>
-              )}
+              // elevation: 2, // Set the elevation for Android
+            }}>
+            <Image
+              source={require("../../../assets/stature.jpg")}
+              style={{
+                flexGrow: 1,
+
+                alignItems: "center",
+                justifyContent: "center",
+                height: "30%",
+                width: "90%",
+                borderRadius: 5,
+              }}
             />
-          </View>
-          <Modal visible={showModal} animationType="slide" transparent>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Collection Details</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Collection Title"
-                  value={collectionTitle}
-                  onChangeText={setCollectionTitle}
-                />
-                <Text style={styles.modalSubtitle}>
-                  Image Count: {imageCount}
-                </Text>
-                <Text style={styles.modalSubtitle}>
-                  Created At: {new Date(currentDateTime).toLocaleString()}
-                </Text>
-                <View style={styles.buttonContainer}>
-                  <TouchableOpacity
-                    style={styles.cancelButton}
-                    onPress={() => setShowModal(false)}>
-                    <Text style={styles.cancelButtonText}>Cancel</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.confirmButton}
-                    onPress={handleConfirmButtonPressed}>
-                    <Text style={styles.confirmButtonText}>Confirm</Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
-            </View>
-          </Modal>
-        </View>
-      )}
+
+            <Text
+              style={{
+                textAlign: "center",
+                position: "absolute",
+                fontSize: 50,
+                color: "white",
+                top: "20%",
+                width: "95%",
+              }}>
+              Collection+
+            </Text>
+          </SafeAreaView>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={{
+            width: 150,
+            height: 50,
+            margin: 20,
+            backgroundColor: "#212121", // Set the background color to dark gray
+            borderRadius: 10,
+            paddingHorizontal: 20,
+            paddingVertical: 15,
+            shadowColor: "#000", // Set the shadow color to black
+            shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
+            shadowOpacity: 0.5, // Set the shadow opacity
+            shadowRadius: 2, // Set the shadow radius
+            elevation: 2, // Set the elevation for Android
+            justifyContent: "center",
+            alignSelf: "center",
+            alignItems: "center",
+          }}
+          onPress={takePhoto}>
+          <Text style={{ color: "white" }}>Camera</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -285,6 +243,19 @@ const styles = StyleSheet.create({
     zIndex: 2,
   },
   saveButtonText: {
+    color: "white",
+    fontSize: 16,
+  },
+  backButton: {
+    position: "absolute",
+    top: 40,
+    left: 20, // Place it to the left of the screen
+    backgroundColor: "#212121",
+    borderRadius: 10,
+    padding: 10,
+    zIndex: 2,
+  },
+  backButtonText: {
     color: "white",
     fontSize: 16,
   },

@@ -19,6 +19,7 @@ import ProfileView from "../view/LoggedIn/ProfileView";
 import RegisterView from "../view/LoggedOut/RegisterView";
 import CreatorView from "../view/LoggedIn/CreatorView";
 import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
+import AddCollectionView from "../view/LoggedIn/AddCollectionView";
 
 import { Ionicons } from "@expo/vector-icons";
 
@@ -46,6 +47,9 @@ export type RootStackParams = {
     uid: string;
   };
   Creator: any;
+  AddCollectionView: {
+    images: any;
+  };
   ProfileSettings: any;
   PersonalDetails: any;
 };
@@ -54,6 +58,13 @@ export type MainStackParams = {
   Home: any;
   ProfileSettings: any;
   PersonalDetails: any;
+  AddCollectionView: {
+    images: any;
+  };
+  CollectionFeedView: {
+    title: string;
+    uid: string;
+  };
 };
 
 //TODO: Add Collection Initial Page detailing App Functionality & Add to Register Stack
@@ -69,6 +80,11 @@ export const MAIN = () => {
         <MainStack.Screen
           name="CollectionFeedView"
           component={CollectionFeedView}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="AddCollectionView"
+          component={AddCollectionView}
           options={{ headerShown: false }}
         />
         <MainStack.Screen

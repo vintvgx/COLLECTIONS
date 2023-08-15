@@ -69,8 +69,6 @@ const Create: React.FC = () => {
       setImages(result.assets);
       // setImages([...images, { uri: result.uri }]);
     }
-
-    console.log(images);
   };
 
   const takePhoto = async () => {

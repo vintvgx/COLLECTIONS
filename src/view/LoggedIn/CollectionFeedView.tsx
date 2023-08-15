@@ -18,10 +18,6 @@ import { RootStackParams } from "../../navigation/Navigation";
 import { useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
-import { fetchCollectionData } from "../../redux_toolkit/slices/retrieveFeedSlice";
-import { calculateImageHeight } from "../../utils/image";
-import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
 
 //components
 import CollectionFeedViewHeader from "../../components/CollectionFeedView/CollectionFeedViewHeader";
@@ -36,6 +32,7 @@ import {
   getTitleMarginLeft,
 } from "../../utils/functions";
 import CollectionFeedViewController from "../../controller/CollectionFeedViewController";
+import CollectionFeedViewContentInfo from "../../components/CollectionFeedView/ColletionFeedViewContentInfo";
 
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
@@ -78,9 +75,9 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
     CollectionFeedViewController.viewableItemsChanged(setCurrentItemIndex)
   ).current;
 
-  // dataCollection?.map((doc) => {
-  //   console.log(`data doc: ${doc.image?.fileName}`);
-  // });
+  const sortedData = dataCollection
+    ? [...dataCollection].sort((a, b) => a.image.id - b.image.id)
+    : [];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -99,28 +96,18 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             dataCollectionLength={dataCollection?.length || 0}
             sharedFontColor={sharedFontColor}
           />
-          <Animated.View
-            style={[
-              styles.contentDetails,
-              {
-                height: headerHeight,
-                backgroundColor: sharedBackgroundColor,
-              },
-            ]}>
-            <Animated.Text
-              style={[
-                styles.title_text,
-                { opacity: titleOpacity, marginLeft: titleMarginLeft },
-              ]}>
-              {title}
-            </Animated.Text>
-          </Animated.View>
+          <CollectionFeedViewContentInfo
+            headerHeight={headerHeight}
+            titleOpacity={titleOpacity}
+            titleMarginLeft={titleMarginLeft}
+            title={title}
+          />
           <FlatList
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={{
               itemVisiblePercentThreshold: 50, // adjust this value as needed
             }}
-            data={dataCollection}
+            data={sortedData}
             renderItem={({ item }) => (
               <CollectionFeedViewRenderItem item={item} />
             )}
@@ -142,16 +129,5 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
-    // paddingTop: STATUS_BAR_HEIGHT,
-  },
-  contentDetails: {
-    alignItems: "flex-start",
-    justifyContent: "center",
-    color: sharedFontColor,
-  },
-  title_text: {
-    fontSize: 30,
-    fontWeight: "bold",
-    color: sharedFontColor,
   },
 });
