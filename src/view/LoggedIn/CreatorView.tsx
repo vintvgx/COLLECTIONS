@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   Image,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 
@@ -36,6 +37,7 @@ const CreatorView: React.FC<CreatorTypes> = () => {
   const [showModal, setShowModal] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
   const [imageCount, setImageCount] = useState(0);
+  const [loading, setLoadingImages] = useState(false);
 
   const currentDateTime = new Date();
   const currentTimestamp = new Date().toISOString();
@@ -58,31 +60,6 @@ const CreatorView: React.FC<CreatorTypes> = () => {
     getPermissions();
   }, []);
 
-  const handleConfirmButtonPressed = async () => {
-    await CreateController.HANDLE_CONFIRM_BUTTON_PRESSED(
-      images,
-      collectionTitle,
-      setCollectionTitle,
-      setImageCount,
-      setShowModal,
-      currentTimestamp,
-      dispatch
-    );
-  };
-
-  const handleSaveButtonPress = () => {
-    CreateController.HANDLE_SAVE_BUTTON_PRESSED(
-      images,
-      setCollectionTitle,
-      setImageCount,
-      setShowModal
-    );
-  };
-
-  const handleBackButtonPress = () => {
-    CreateController.HANDLE_BACK_BUTTON_PRESSED(setImages, setCover);
-  };
-
   const takePhoto = async () => {
     const takenImages = await CreateController.TAKE_PHOTO();
 
@@ -92,6 +69,7 @@ const CreatorView: React.FC<CreatorTypes> = () => {
   };
 
   const addCollection = async () => {
+    setLoadingImages(true);
     const selectedImages = await CreateController.ADD_COLLECTION();
     if (selectedImages) {
       console.log("CreatorViewIMAGES_SELECTED:", selectedImages);
@@ -99,74 +77,81 @@ const CreatorView: React.FC<CreatorTypes> = () => {
       // After adding to the collection, navigate to the AddCollectionView
       navigation.navigate("AddCollectionView", { images: selectedImages });
     }
+    setLoadingImages(false);
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <View style={{ flex: 1 }}>
-        <TouchableOpacity
-          style={{
-            flex: 5,
-          }}
-          onPress={addCollection}>
-          <SafeAreaView
+      {loading ? (
+        <View style={styles.centerLoading}>
+          <ActivityIndicator size="large" color="#000" />
+        </View>
+      ) : (
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
             style={{
-              flex: 1,
-              justifyContent: "center",
-              alignItems: "center",
+              flex: 5,
+            }}
+            onPress={addCollection}>
+            <SafeAreaView
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                shadowColor: "#000", // Set the shadow color to black
+                shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
+                shadowOpacity: 0.5, // Set the shadow opacity
+                // elevation: 2, // Set the elevation for Android
+              }}>
+              <Image
+                source={require("../../../assets/stature.jpg")}
+                style={{
+                  flexGrow: 1,
+
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: "30%",
+                  width: "90%",
+                  borderRadius: 5,
+                }}
+              />
+
+              <Text
+                style={{
+                  textAlign: "center",
+                  position: "absolute",
+                  fontSize: 50,
+                  color: "white",
+                  top: "20%",
+                  width: "95%",
+                }}>
+                Collection+
+              </Text>
+            </SafeAreaView>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{
+              width: 150,
+              height: 50,
+              margin: 20,
+              backgroundColor: "#212121", // Set the background color to dark gray
+              borderRadius: 10,
+              paddingHorizontal: 20,
+              paddingVertical: 15,
               shadowColor: "#000", // Set the shadow color to black
               shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
               shadowOpacity: 0.5, // Set the shadow opacity
-              // elevation: 2, // Set the elevation for Android
-            }}>
-            <Image
-              source={require("../../../assets/stature.jpg")}
-              style={{
-                flexGrow: 1,
-
-                alignItems: "center",
-                justifyContent: "center",
-                height: "30%",
-                width: "90%",
-                borderRadius: 5,
-              }}
-            />
-
-            <Text
-              style={{
-                textAlign: "center",
-                position: "absolute",
-                fontSize: 50,
-                color: "white",
-                top: "20%",
-                width: "95%",
-              }}>
-              Collection+
-            </Text>
-          </SafeAreaView>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={{
-            width: 150,
-            height: 50,
-            margin: 20,
-            backgroundColor: "#212121", // Set the background color to dark gray
-            borderRadius: 10,
-            paddingHorizontal: 20,
-            paddingVertical: 15,
-            shadowColor: "#000", // Set the shadow color to black
-            shadowOffset: { width: 0, height: 2 }, // Set the shadow offset
-            shadowOpacity: 0.5, // Set the shadow opacity
-            shadowRadius: 2, // Set the shadow radius
-            elevation: 2, // Set the elevation for Android
-            justifyContent: "center",
-            alignSelf: "center",
-            alignItems: "center",
-          }}
-          onPress={takePhoto}>
-          <Text style={{ color: "white" }}>Camera</Text>
-        </TouchableOpacity>
-      </View>
+              shadowRadius: 2, // Set the shadow radius
+              elevation: 2, // Set the elevation for Android
+              justifyContent: "center",
+              alignSelf: "center",
+              alignItems: "center",
+            }}
+            onPress={takePhoto}>
+            <Text style={{ color: "white" }}>Camera</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };
@@ -174,6 +159,11 @@ const CreatorView: React.FC<CreatorTypes> = () => {
 export default CreatorView;
 
 const styles = StyleSheet.create({
+  centerLoading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   flatlist_container: {
     backgroundColor: "white",
     borderRadius: 10,

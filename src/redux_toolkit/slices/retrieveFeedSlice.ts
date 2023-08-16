@@ -29,6 +29,7 @@ const initialState: DataState = {
   feedData: [],
   collectionsData: [],
   isLoading: false,
+  isRefreshing: false,
   error: null,
   collectionCovers: [],
   needsReset: false,
@@ -67,6 +68,10 @@ const feedSlice = createSlice({
       state.isLoading = action.payload;
       state.error = null;
     },
+    setIsRefreshing: (state, action: PayloadAction<boolean>) => {
+      state.isRefreshing = action.payload;
+      state.error = null;
+    },
     setError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
       state.error = action.payload;
@@ -94,6 +99,7 @@ export const {
   resetLastDoc,
   addImageToCollection,
   setLoading,
+  setIsRefreshing,
   setError,
 } = feedSlice.actions;
 
@@ -115,13 +121,23 @@ export const fetchFeedData =
     dispatch(setLoading(true));
     const state = getState();
     let lastDoc = state.feed.lastDoc;
+    let refreshing = state.feed.isRefreshing;
 
     try {
       let feedFilenamesQuery;
-      console.log("LAST DOC: ", lastDoc);
+      // console.log("LAST DOC: ", lastDoc);
 
       // If this is the first batch, we don't need to use startAfter
+      console.log(`Refreshing? ${refreshing}`);
       if (!lastDoc) {
+        feedFilenamesQuery = query(
+          collection(db, "feed/allUsers/filenames"),
+          orderBy("createdAt", "desc"),
+          limit(5)
+        );
+      } else if (refreshing) {
+        dispatch(setFeedData([]));
+        dispatch(setFeedCollectionCovers([]));
         feedFilenamesQuery = query(
           collection(db, "feed/allUsers/filenames"),
           orderBy("createdAt", "desc"),
@@ -139,13 +155,17 @@ export const fetchFeedData =
 
       const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
 
+      feedFilenamesQuerySnapshot.forEach((doc) => {
+        console.log(doc.data());
+      });
+
       const filenames = await Promise.all(
         feedFilenamesQuerySnapshot.docs.map((doc) => doc.id)
       );
 
-      // console.log("FEEDFILENAMESQUERY: ", feedFilenamesQuery);
-      // console.log("feedFilenamesQuerySnapshot: ", feedFilenamesQuerySnapshot);
-      // console.log("FILENAMES:", filenames);
+      filenames.forEach((doc) => {
+        console.log("FILENAMES", doc);
+      });
 
       if (feedFilenamesQuerySnapshot.docs.length > 0) {
         lastDoc =
@@ -154,7 +174,7 @@ export const fetchFeedData =
           ];
         const lastDocData = lastDoc.data();
         dispatch(setLastDoc(lastDoc)); // Update the last document in the Redux state
-        console.log("LAST DOC: ", lastDocData);
+        // console.log("LAST DOC: ", lastDocData);
       }
 
       const feedCollectionData = await Promise.all(
@@ -171,7 +191,7 @@ export const fetchFeedData =
             feedImageCollection.push({
               image: item.data(),
               title: item.data().title,
-              date: item.data().date,
+              createdAt: item.data().createdAt,
               // userData: userData,
             });
           });
@@ -183,6 +203,7 @@ export const fetchFeedData =
         })
       );
 
+      // APPEND USER DATA TO COLLECTION COVER ARRAY
       const feedCollectionCoversPromises = feedCollectionData.map(
         async (collection) => {
           const cover = collection.find((image) => image.image.id === 0);
@@ -204,10 +225,15 @@ export const fetchFeedData =
       );
       dispatch(setFeedCollectionCovers(feedCollectionCovers));
 
+      feedCollectionCovers.forEach((doc) => {
+        console.log("FEEDCOLLECTIONCOVERS:", doc);
+      });
+
       // Cache the fetched data for future use
       cacheData("cached_feed_data", feedCollectionData);
 
       dispatch(setLoading(false));
+      dispatch(setIsRefreshing(false));
       console.log("Fetch data completed"); // Add this line to check if the action is completed
     } catch (error) {
       dispatch(setError("Error"));
@@ -241,19 +267,7 @@ export const fetchCollectionData = createAsyncThunk(
       });
 
       console.log(dataCollection);
-      // const collectionData: ImageCollectionData[] = await Promise.all(
-      //   collectionSnapshot.docs.map(async (doc) => {
-      //     console.log(doc.data());
-      //     return {
-      //       image: doc.data(),
-      //       title: doc.data().title,
-      //       createdAt: doc.data().createdAt,
-      //       // userData: userData,
-      //     };
-      //   })
-      // );
 
-      // console.log(`TITLE ${dataCollection[1]}`);
       return { dataCollection, userData };
     } catch (error) {
       console.error("fetchCollectionData ERROR:", error);

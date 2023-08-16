@@ -4,6 +4,7 @@ export interface DataState {
   collectionsData: ImageCollectionData[] | undefined;
   feedData: ImageCollectionData[] | undefined;
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
   needsReset: boolean;
