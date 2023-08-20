@@ -1,61 +1,77 @@
-//* REACT
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View } from "react-native";
 
-//* DEPENDENCIES
-import { Provider } from "react-redux";
-// import { store } from "./src/redux";
-import { store } from "./src/redux_toolkit";
+import { Provider, useDispatch } from "react-redux";
+import { AppDispatch, store, useAppSelector } from "./src/redux_toolkit";
 import { auth } from "./src/utils/firebase/f9_config";
+import { setIsProfileSet } from "./src/redux_toolkit/slices/user_data";
+import { setLoggedIn } from "./src/redux_toolkit/slices/authSlice";
 
-//* NAV DEPENDENCIES
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeStack } from "./src/navigation/Navigation";
 import { RegisterStack } from "./src/navigation/Navigation";
 import { MAIN } from "./src/navigation/Navigation";
 import { LogBox } from "react-native";
+import {
+  fetchUserData,
+  selectIsProfileSet,
+} from "./src/redux_toolkit/slices/user_data";
 
-// Ignore specific warning messages
-// LogBox.ignoreLogs([
-//   "source.uri should not be an empty string",
-//   // Add more warning messages you want to ignore here
-// ]);
-LogBox.ignoreAllLogs();
-
-export default function App() {
-  const [isLoggedIn, setisLoggedIn] = useState(false);
-  const [isLoading, setisLoading] = useState(false);
+const Root = () => {
+  const dispatch: AppDispatch = useDispatch();
+  const { isLoggedIn } = useAppSelector((state) => state.auth);
+  const { isProfileSet } = useAppSelector((state) => state.userData);
 
   useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      console.log(user);
-      if (!user) {
-        setisLoggedIn(false);
-        console.log("NOT SIGNED IN");
-      } else {
-        setisLoggedIn(true);
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
         console.log("SIGNED IN");
+        const profileUser = await dispatch(fetchUserData()); // Function to fetch user profile data from Firebase Firestor
+        console.log(
+          "🚀 ~ file: App.tsx:29 ~ auth.onAuthStateChanged ~ profileUser:",
+          profileUser
+        );
+        console.log(
+          "🚀 ~ file: App.tsx:29 ~ auth.onAuthStateChanged ~ profileUser:",
+          profileUser.isProfileSet
+        );
+
+        if (profileUser.isProfileSet) {
+          // Update isProfileSet flag in Redux
+          dispatch(setIsProfileSet(true));
+        }
+      } else {
+        console.log("SIGNED OUT");
+        dispatch(setLoggedIn(false));
+        dispatch(setIsProfileSet(false));
       }
     });
-  }, []);
+  }, [auth]);
 
-  if (!isLoggedIn) {
-    return (
-      <Provider store={store}>
-        <RegisterStack />
-      </Provider>
-    );
+  console.log(isLoggedIn);
+  console.log(isProfileSet);
+
+  if (!isLoggedIn || !isProfileSet) {
+    console.log("NOT LOGGED IN");
+    return <RegisterStack />;
   }
 
-  if (isLoggedIn) {
-    return (
-      <Provider store={store}>
-        <MAIN />
-      </Provider>
-    );
+  if (isLoggedIn && isProfileSet) {
+    console.log("LOGGED IN");
+    return <MAIN />;
   }
+
+  return null; // Render nothing if none of the above conditions are met
+};
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <Root />
+    </Provider>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -66,102 +82,3 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 });
-
-//TODO   Code implements keeping track of user logged in
-//TODO   ERROR: Problem with Provider
-
-// //* REACT
-// import { useEffect, useState } from "react";
-// import { StatusBar } from "expo-status-bar";
-// import { StyleSheet, Text, View } from "react-native";
-
-// //* DEPENDENCIES
-// import { Provider, useSelector } from "react-redux";
-// // import { store } from "./src/redux";
-// import { store } from "./src/redux_toolkit";
-// import { auth } from "./src/firebase/f9_config";
-
-// //* NAV DEPENDENCIES
-// import { NavigationContainer } from "@react-navigation/native";
-// import { createNativeStackNavigator } from "@react-navigation/native-stack";
-// import { HomeStack } from "./src/navigation/Navigation";
-// import { RegisterStack } from "./src/navigation/Navigation";
-// import { MAIN } from "./src/navigation/Navigation";
-// import { LogBox } from "react-native";
-
-// //* USER AUTH DEPENDENCIES
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-// import { useDispatch } from "react-redux";
-// import { RootState } from "./src/redux_toolkit";
-// import { setLoggedIn } from "./src/redux_toolkit/slices/authSlice";
-
-// // Ignore specific warning messages
-// // LogBox.ignoreLogs([
-// //   "source.uri should not be an empty string",
-// //   // Add more warning messages you want to ignore here
-// // ]);
-// LogBox.ignoreAllLogs();
-
-// export default function App() {
-//   const [isLoading, setisLoading] = useState(false);
-//   const dispatch = useDispatch();
-//   // const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn);
-//   const isLoggedIn = false;
-
-//   useEffect(() => {
-//     const checkAuthentication = async () => {
-//       try {
-//         const userToken = await AsyncStorage.getItem("userToken");
-//         if (userToken) {
-//           // User was previously authenticated, update the Redux state
-//           dispatch(setLoggedIn(true));
-//         }
-//       } catch (error) {
-//         console.log("Error reading user token from AsyncStorage:", error);
-//       }
-//     };
-
-//     // Check authentication status on app load
-//     checkAuthentication();
-
-//     // Listen for authentication state changes
-//     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-//       if (!user) {
-//         // User is not signed in, set isLoggedIn to false
-//         dispatch(setLoggedIn(false));
-//       } else {
-//         // User is signed in, set isLoggedIn to true and save the user token
-//         dispatch(setLoggedIn(true));
-//         AsyncStorage.setItem("userToken", "userTokenHere");
-//       }
-//     });
-
-//     // Clean up the subscription
-//     return unsubscribeAuth();
-//   }, [dispatch]);
-
-//   if (!isLoggedIn) {
-//     return (
-//       <Provider store={store}>
-//         <RegisterStack />
-//       </Provider>
-//     );
-//   }
-
-//   if (isLoggedIn) {
-//     return (
-//       <Provider store={store}>
-//         <MAIN />
-//       </Provider>
-//     );
-//   }
-// }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: "#fff",
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-// });

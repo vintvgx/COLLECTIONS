@@ -34,7 +34,7 @@ const initialState: DataState = {
   collectionCovers: [],
   needsReset: false,
   feedCollectionCovers: [],
-  lastDoc: null,
+  lastDoc: null as string | null,
   userData: null,
 };
 
@@ -52,10 +52,7 @@ const feedSlice = createSlice({
         action.payload
       );
     },
-    setLastDoc: (
-      state,
-      action: PayloadAction<QueryDocumentSnapshot | null>
-    ) => {
+    setLastDoc: (state, action: PayloadAction<string | null>) => {
       state.lastDoc = action.payload;
     },
     resetLastDoc: (state) => {
@@ -120,7 +117,7 @@ export const fetchFeedData =
   () => async (dispatch: AppDispatch, getState: () => RootState) => {
     dispatch(setLoading(true));
     const state = getState();
-    let lastDoc = state.feed.lastDoc;
+    let lastDocID = state.feed.lastDoc;
     let refreshing = state.feed.isRefreshing;
 
     try {
@@ -129,7 +126,7 @@ export const fetchFeedData =
 
       // If this is the first batch, we don't need to use startAfter
       console.log(`Refreshing? ${refreshing}`);
-      if (!lastDoc) {
+      if (!lastDocID) {
         feedFilenamesQuery = query(
           collection(db, "feed/allUsers/filenames"),
           orderBy("createdAt", "desc"),
@@ -145,12 +142,17 @@ export const fetchFeedData =
         );
       } else {
         // If this isn't the first batch, start fetching after the last document of the previous batch
-        feedFilenamesQuery = query(
-          collection(db, "feed/allUsers/filenames"),
-          orderBy("createdAt", "desc"),
-          startAfter(lastDoc),
-          limit(5)
-        );
+        const lastDocRef = doc(db, "feed/allUsers/filenames", lastDocID);
+        const lastDoc = await getDoc(lastDocRef);
+
+        if (lastDoc.exists()) {
+          feedFilenamesQuery = query(
+            collection(db, "feed/allUsers/filenames"),
+            orderBy("createdAt", "desc"),
+            startAfter(lastDoc),
+            limit(5)
+          );
+        }
       }
 
       const feedFilenamesQuerySnapshot = await getDocs(feedFilenamesQuery);
@@ -168,13 +170,11 @@ export const fetchFeedData =
       });
 
       if (feedFilenamesQuerySnapshot.docs.length > 0) {
-        lastDoc =
+        lastDocID =
           feedFilenamesQuerySnapshot.docs[
             feedFilenamesQuerySnapshot.docs.length - 1
-          ];
-        const lastDocData = lastDoc.data();
-        dispatch(setLastDoc(lastDoc)); // Update the last document in the Redux state
-        // console.log("LAST DOC: ", lastDocData);
+          ].id;
+        dispatch(setLastDoc(lastDocID));
       }
 
       const feedCollectionData = await Promise.all(

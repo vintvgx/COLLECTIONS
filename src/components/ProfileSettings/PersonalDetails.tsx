@@ -10,7 +10,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-import { ProfileUser, UserData } from "../../model/types";
+import { ProfileUser, UserData, ImageData } from "../../model/types";
 import { saveUserData } from "../../redux_toolkit/slices/user_data";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";

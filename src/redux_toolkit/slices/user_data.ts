@@ -1,4 +1,9 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  Action,
+  createSlice,
+  PayloadAction,
+  ThunkAction,
+} from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import {
   collection,
@@ -33,8 +38,7 @@ const initialState: ProfileUser = {
       assetId: "",
       title: "",
       id: 0,
-      time: "null",
-      date: "null",
+      createdAt: "",
       fileName: "",
       fileSizE: 2,
       height: 2,
@@ -43,6 +47,7 @@ const initialState: ProfileUser = {
       width: 2,
     },
   },
+  isProfileSet: false,
   isLoading: false,
   error: null,
 };
@@ -51,8 +56,11 @@ const userDataSlice = createSlice({
   name: "userData",
   initialState,
   reducers: {
-    setUserData: (state, action: PayloadAction<UserData>) => {
+    setUserData: (state, action: PayloadAction<ProfileUser>) => {
       state.userData = action.payload;
+    },
+    setIsProfileSet: (state, action: PayloadAction<boolean>) => {
+      state.isProfileSet = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
@@ -65,17 +73,15 @@ const userDataSlice = createSlice({
   },
 });
 
-export const { setUserData, setLoading, setError } = userDataSlice.actions;
+export const { setUserData, setIsProfileSet, setLoading, setError } =
+  userDataSlice.actions;
 
 export const saveUserData =
-  (userData: UserData) =>
-  async (dispatch: AppDispatch, getState: () => RootState) => {
+  (userData: UserData) => async (dispatch: AppDispatch) => {
     const user = auth.currentUser;
     if (user) {
       const { firstName, lastName, username, bio, avatar } = userData;
       const userRef = doc(db, "users", user.uid);
-
-      console.log("first Name?:" + firstName);
 
       try {
         await setDoc(userRef, {
@@ -84,14 +90,10 @@ export const saveUserData =
           username,
           bio,
         });
-        console.log(firstName + lastName + username + bio);
-        console.log("is avatar?:" + avatar.assetId);
 
         // Upload the avatar image to Firebase Storage
         if (avatar) {
-          console.log("AVATAR FUNCTION RAN");
-          // const storageRef = storage.ref();
-          // const avatarRef = storageRef.child(`${user.uid}/avatar.jpg`);
+          console.log("UPLOADING AVATAR");
 
           const avatarRef = ref(storage, `${user.uid}/avatar.jpg`);
 
@@ -159,6 +161,7 @@ export const saveUserData =
                   };
 
                   dispatch(setUserData(updatedUserData));
+                  dispatch(setIsProfileSet(true));
                 });
               }
             );
@@ -170,31 +173,42 @@ export const saveUserData =
     }
   };
 
-export const fetchUserData = () => async (dispatch: AppDispatch) => {
-  dispatch(setLoading(true));
-  const user = auth.currentUser;
-  if (user) {
-    try {
-      const userRef = doc(db, "users", user.uid);
-      const userSnapshot = await getDoc(userRef);
+export const fetchUserData =
+  (): ThunkAction<Promise<ProfileUser>, RootState, undefined, Action<string>> =>
+  async (dispatch: AppDispatch): Promise<ProfileUser> => {
+    dispatch(setLoading(true));
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
 
-      console.log(userSnapshot.data());
+        console.log(userSnapshot.data());
 
-      if (userSnapshot.exists()) {
-        const userData = userSnapshot.data() as UserData;
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data() as ProfileUser;
 
-        dispatch(setUserData(userData));
-      } else {
-        dispatch(setUserData(initialState));
-        console.log("not working");
+          dispatch(setUserData(userData));
+          return {
+            userData: userData.userData as UserData,
+            isProfileSet: true,
+            isLoading: false,
+            error: null,
+          };
+        } else {
+          dispatch(setUserData(initialState));
+          console.log("not working");
+        }
+      } catch (error) {
+        dispatch(setError("Error fetching user data"));
       }
-    } catch (error) {
-      dispatch(setError("Error fetching user data"));
+      dispatch(setLoading(false));
     }
-    dispatch(setLoading(false));
-  }
-};
+    return initialState;
+  };
 
 export const selectUserData = (state: RootState) => state.userData.userData;
+export const selectIsProfileSet = (state: RootState) =>
+  state.userData.isProfileSet;
 
 export default userDataSlice.reducer;

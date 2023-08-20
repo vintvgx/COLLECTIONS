@@ -14,11 +14,13 @@ interface AuthState {
     email: string;
     // Add other relevant user information here
   } | null;
+  isProfileSet: boolean;
 }
 
 const initialState: AuthState = {
   isLoggedIn: false,
   user: null,
+  isProfileSet: false,
 };
 
 const authSlice = createSlice({
@@ -61,15 +63,16 @@ export const OnUserSignup = createAsyncThunk<
     console.log(user);
 
     // Save user data to AsyncStorage
-    await AsyncStorage.setItem("user", JSON.stringify(user));
-    await AsyncStorage.setItem("isLoggedIn", "true");
+    // await AsyncStorage.setItem("user", JSON.stringify(user));
+    // await AsyncStorage.setItem("isLoggedIn", "true");
 
-    thunkAPI.dispatch(setUser(user)); // Update user state in Redux
-    thunkAPI.dispatch(setLoggedIn(true)); // Update isLoggedIn state in Redux
+    // thunkAPI.dispatch(setUser(user)); // Update user state in Redux
+    // thunkAPI.dispatch(setLoggedIn(true)); // Update isLoggedIn state in Redux
 
     return "Signup Success";
   } catch (error) {
-    return thunkAPI.rejectWithValue("Sign Up Error");
+    console.log(error);
+    return thunkAPI.rejectWithValue("Sign Up Error " + error);
   }
 });
 

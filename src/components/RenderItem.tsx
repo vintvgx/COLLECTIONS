@@ -98,6 +98,7 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
           }}>
           <View style={{ marginTop: 2, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
+            {/* <Text style={styles.views}>{item.createdAt} views</Text> */}
             {/* <Text style={styles.views}>234 views</Text>
             <Text style={styles.views}>{userFriendlyDate}</Text> */}
           </View>

@@ -6,6 +6,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 //screens
 import RegisterSplashScreen from "../components/RegisterSplashScreen";
 import { RegisterScreen } from "../screens/Register";
+import RegisterSetupProfileView from "../view/LoggedOut/RegisterSetupProfileView";
 import { HomeScreen } from "../screens/Home";
 import Creator from "../screens/Creator";
 import Profile from "../screens/Profile";
@@ -22,6 +23,7 @@ import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
 import AddCollectionView from "../view/LoggedIn/AddCollectionView";
 
 import { Ionicons } from "@expo/vector-icons";
+import { LoginProps } from "../model/types";
 
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator<RootStackParams>();
@@ -40,7 +42,8 @@ call : navigation.navigate("Home");
 
 export type RootStackParams = {
   RegisterSplashScreen: any;
-  Register: any;
+  Register: LoginProps;
+  RegisterSetupProfileView: any;
   Home: any;
   CollectionFeedView: {
     title: string;
@@ -115,7 +118,11 @@ export const RegisterStack = () => (
         component={RegisterScreen}
         options={{ headerShown: false }}
       />
-      <RootStack.Screen name="Home" component={HomeStack} />
+      <RootStack.Screen
+        name="RegisterSetupProfileView"
+        component={RegisterSetupProfileView}
+        options={{ headerShown: false }}
+      />
     </RootStack.Navigator>
   </NavigationContainer>
 );
