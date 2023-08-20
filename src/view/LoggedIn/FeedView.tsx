@@ -15,7 +15,10 @@ import { AppDispatch } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
 import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
-import { fetchFeedData } from "../../redux_toolkit/slices/retrieveFeedSlice";
+import {
+  fetchFeedData,
+  setIsRefreshing,
+} from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
 import RenderItem from "../../components/RenderItem";
 import { logFeedData } from "../../utils/functions";
@@ -44,21 +47,40 @@ const FeedView: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
+    console.log("feedCollectionCovers useEFFECT");
     if (feedCollectionCovers) {
-      // logFeedData(feedCollectionCovers);
+      console.log("feedCollectionCovers if true");
+
       // Adding only new feedCollectionCovers
-      setFeedCovers((prevCovers) => [
-        ...prevCovers,
-        ...feedCollectionCovers.filter(
-          (cover) =>
-            !prevCovers.some(
-              (prevCover) => prevCover.image.fileName === cover.image.fileName
-            ) // assuming `id` is unique
-        ),
-      ]);
+      setFeedCovers((prevCovers) => {
+        const newCovers = [
+          ...prevCovers,
+          ...feedCollectionCovers.filter(
+            (cover) =>
+              !prevCovers.some(
+                (prevCover) => prevCover.image.fileName === cover.image.fileName
+              ) // assuming `id` is unique
+          ),
+        ];
+
+        // Sort the newCovers array based on the createdAt property
+        newCovers.sort((a, b) => {
+          const dateA = new Date(a.image.createdAt);
+          const dateB = new Date(b.image.createdAt);
+
+          // Sort in descending order (newest first)
+          return dateB.getTime() - dateA.getTime();
+        });
+
+        return newCovers;
+      });
+
+      feedCovers.forEach((doc) => {
+        console.log("FEEDCOLLECTIONCOVERS:", doc.title);
+      });
     }
 
-    logFeedData(feedCovers);
+    // logFeedData(feedCovers);
   }, [feedCollectionCovers]);
 
   const fetchMoreFeedData = () => {
@@ -70,14 +92,15 @@ const FeedView: React.FC = () => {
 
   const handleOnRefresh = async () => {
     setRefreshing(true);
+    dispatch(setIsRefreshing(true));
     try {
       await dispatch(fetchFeedData()); // Wait for the dispatch to complete
     } catch (error) {
       // Handle any errors that might occur during the dispatch
       console.error(error);
+    } finally {
+      setRefreshing(false); // Update the refreshing state after the dispatch completes
     }
-    setRefreshing(false); // Update the refreshing state after the dispatch completes
-    // logFeedData(feedCollectionCovers);
   };
 
   const handleImagePress = (imageData: {

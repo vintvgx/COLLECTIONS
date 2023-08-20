@@ -76,22 +76,29 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
             </View>
           ) : ( */}
           <Image
-            source={{ uri: item.image.uri }}
+            source={item.image.uri ? { uri: item.image.uri } : null}
             // cachekey={cacheKey}
             style={{
               flex: 1,
               height: calculatedHeight,
               alignSelf: "stretch",
+              backgroundColor: "lightgray",
             }}
-            resizeMode="contain"
+            resizeMode="cover"
             // onLoadStrart={handleImageLoadStart}
             // onLoadEnd={handleImageLoad}
           />
           {/* )} */}
         </View>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}>
           <View style={{ marginTop: 2, marginLeft: 5 }}>
             <Text style={styles.title}>{item.title}</Text>
+            {/* <Text style={styles.views}>{item.createdAt} views</Text> */}
             {/* <Text style={styles.views}>234 views</Text>
             <Text style={styles.views}>{userFriendlyDate}</Text> */}
           </View>
@@ -127,7 +134,7 @@ const styles = StyleSheet.create({
   },
   collectionCard: {
     flex: 1,
-    marginBottom: 75,
+    marginBottom: 85,
     paddingHorizontal: 15,
   },
   title: {

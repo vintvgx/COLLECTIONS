@@ -22,6 +22,9 @@ import ProfileImageCard from "../../components/ProfileImageCard";
 import ProfileController from "../../controller/ProfileController";
 import { ImageCollectionData } from "../../model/types";
 import { logFeedData } from "../../utils/functions";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParams } from "../../navigation/Navigation";
+import { auth } from "../../utils/firebase/f9_config";
 
 const { width } = Dimensions.get("window");
 
@@ -33,10 +36,13 @@ const ProfileView: React.FC = () => {
   const { isLoading } = useAppSelector((state) => state.filenames);
   const [formattedData, setFormattedData] = useState<ImageCollectionData[]>([]);
 
-  const navigation = useNavigation();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
-  const { avatar } = useAppSelector((state) => state.userData.userData);
+  const { avatar, username } = useAppSelector(
+    (state) => state.userData.userData
+  );
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -58,20 +64,47 @@ const ProfileView: React.FC = () => {
       const covers = await ProfileController.setImageHeightAndWeight(
         collectionCovers
       );
-      logFeedData(covers);
       setFormattedData(covers);
     }
 
     fetchCollectionCovers();
   }, [collectionCovers]);
 
+  const signOutUser = async () => {
+    try {
+      await auth.signOut();
+      console.log("User signed out!");
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "white" }}>
       <View style={styles.navigation}>
-        <ProfileMain profilePicture={avatar?.uri} collections={123} fans={50} />
+        <Image source={{ uri: avatar?.uri }} style={styles.profilePicture} />
+        <View style={styles.userInfo}>
+          <Text style={styles.username}>{username}</Text>
+          <View style={styles.userStats}>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>{collectionCovers?.length}</Text>
+              <Text style={styles.statLabel}>Collections</Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={styles.statNumber}>123</Text>
+              <Text style={styles.statLabel}>Fans</Text>
+            </View>
+          </View>
+        </View>
+        <View style={styles.signOutButtonContainer}>
+          <TouchableOpacity onPress={signOutUser} style={styles.signOutButton}>
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
       </View>
+      {username && <Text style={styles.bio}>{username}</Text>}
       <View style={styles.body}>
-        <ScrollView style={{ marginTop: 25 }}>
+        <ScrollView style={{ marginTop: 16 }}>
           {!isLoading && (
             <MasonryList
               data={formattedData}
@@ -103,70 +136,77 @@ const styles = StyleSheet.create({
   navigation: {
     flex: 3,
     backgroundColor: "white",
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  signOutButtonContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    zIndex: 10,
+  },
+  signOutButton: {
+    padding: 8,
+    backgroundColor: "#FF6347",
+    borderRadius: 5,
+  },
+  signOutButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 14,
   },
   body: {
     flex: 9,
-    justifyContent: "center",
-    backgroundColor: "#dedede",
-  },
-  footer: {
-    flex: 1,
-    backgroundColor: "cyan",
+    backgroundColor: "#f5f5f5",
   },
   scrollViewContent: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    // paddingHorizontal: 10,
-  },
-  column: {
-    width: "100%",
-    borderColor: "#ccc",
-    marginBottom: 10,
-    alignSelf: "center",
-    justifyContent: "center",
+    padding: 16,
   },
   coverContainer: {
-    width: width,
-    marginTop: 70,
+    width: (width - 48) / 3,
+    marginBottom: 8,
   },
   coverImage: {
-    marginVertical: 30,
-    alignSelf: "center",
-    borderRadius: 5,
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 4,
   },
-  title: {
-    // fontSize: 17,
-    // fontWeight: "700",
-    textAlign: "left",
-    // fontFamily: "Inter",
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: 16,
-    lineHeight: 19,
-    // marginLeft: 40,
-    marginBottom: 2,
-    color: "rgba(255, 255, 255, 0.88)",
+  profilePicture: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 16,
   },
-  views: {
-    // fontFamily: "Inter",
-    fontStyle: "normal",
-    fontWeight: "500",
-    fontSize: 10,
-    lineHeight: 10,
-    color: "rgba(255, 255, 255, 0.69)",
+  userInfo: {
+    flex: 1,
   },
-  pageIndicator: {
+  username: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  userStats: {
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "absolute",
-    bottom: 40,
   },
-  dot: {
-    width: 20,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
+  stat: {
+    marginRight: 16,
+  },
+  statNumber: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  statLabel: {
+    fontSize: 12,
+    color: "#888",
+  },
+  bio: {
+    padding: 16,
+    fontSize: 14,
+    color: "#555",
   },
 });

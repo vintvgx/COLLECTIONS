@@ -1,9 +1,15 @@
+export interface LoginProps {
+  OnUserLogin: Function;
+  OnUserSignup: Function;
+}
+
 export interface DataState {
   userId: null;
   filenames: string[];
   collectionsData: ImageCollectionData[] | undefined;
   feedData: ImageCollectionData[] | undefined;
   isLoading: boolean;
+  isRefreshing: boolean;
   error: string | null;
   collectionCovers: ImageCollectionData[] | undefined;
   needsReset: boolean;
@@ -14,15 +20,15 @@ export interface DataState {
 
 export interface ImageData {
   assetId: string;
-  id: number;
+  id?: number;
   title?: string;
   fileName: string;
-  fileSizE: number;
+  fileSizE?: number;
   height: number;
   type: string;
   uri: string;
   width: number;
-  createdAt: string;
+  createdAt?: string;
   uid?: string;
 }
 
@@ -70,11 +76,12 @@ export interface UserData {
   lastName: string;
   username: string;
   bio: string;
-  avatar: ImageData;
+  avatar: ImageData | undefined;
 }
 
 export interface ProfileUser {
-  userData: UserData;
+  userData: UserData | undefined;
+  isProfileSet: boolean;
   isLoading: boolean;
   error: string | null;
 }

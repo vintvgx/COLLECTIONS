@@ -1,17 +1,17 @@
 import { Keyboard, StyleSheet, Text, View } from "react-native";
 import React, { useState, useEffect } from "react";
+import { unwrapResult } from "@reduxjs/toolkit";
+
 import { TextField } from "../components/TextField";
 import { ButtonWithTitle } from "../components/ButtonWithTitle";
 import { connect } from "react-redux";
-// import {
-//   ApplicationState,
-//   OnUserLogin,
-//   OnUserSignup,
-//   UserState,
-// } from "../redux";
+
 import { OnUserSignup } from "../redux_toolkit/slices/authSlice";
 import { OnUserLogin } from "../redux_toolkit/slices/authSlice";
 import { useDispatch } from "react-redux";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParams } from "../navigation/Navigation";
 
 interface LoginProps {
   OnUserLogin: Function;
@@ -22,23 +22,52 @@ const _RegisterScreen: React.FC<LoginProps> = ({
   OnUserLogin,
   OnUserSignup,
 }) => {
+  let result = "";
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const dispatch = useDispatch();
+
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const onTapAuthenticate = async () => {
     try {
+      setErrorMessage(null);
       if (isSignup) {
-        await dispatch(OnUserSignup({ email, username, password }));
+        try {
+          const resultAction = await dispatch(
+            OnUserSignup({ email, username, password })
+          );
+          result = unwrapResult(resultAction); // If the promise is rejected, this will throw an error
+          if (result === "Signup Success") {
+            navigation.navigate("RegisterSetupProfileView");
+          } else {
+            console.log("Signup Error:", result);
+          }
+        } catch (error) {
+          // If the promise is rejected, the error will be caught here
+          console.log("Signup Error:", result);
+          // Set the error message in the component state
+          setErrorMessage(result || "An error occurred during signup");
+        }
       } else {
-        // OnUserLogin(email, password);
-        await dispatch(OnUserLogin({ email: email, password: password }));
+        const resultAction = await dispatch(
+          OnUserLogin({ email: email, password: password })
+        );
+        const result = unwrapResult(resultAction);
+        if (result === "Login Success") {
+          navigation.navigate("RegisterSetupProfileView");
+        }
       }
     } catch (error) {
-      console.log(error);
+      console.log(
+        "🚀 ~ file: Register.tsx:62 ~ onTapAuthenticate ~ error:",
+        error
+      );
     }
   };
 
@@ -73,6 +102,10 @@ const _RegisterScreen: React.FC<LoginProps> = ({
           isSecure={true}
         />
 
+        {errorMessage && (
+          <Text style={{ color: "red", marginTop: 10 }}>{errorMessage}</Text>
+        )}
+
         <ButtonWithTitle
           title={title}
           height={50}
@@ -95,7 +128,6 @@ const _RegisterScreen: React.FC<LoginProps> = ({
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

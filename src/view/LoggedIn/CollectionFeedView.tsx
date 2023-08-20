@@ -101,6 +101,16 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             titleOpacity={titleOpacity}
             titleMarginLeft={titleMarginLeft}
             title={title}
+            // createdAt={
+            //   sortedData[0].createdAt
+            //     ? CollectionFeedViewController.formatDate(
+            //         sortedData[0].createdAt
+            //       )
+            //     : "N/A"
+            // }
+            description={"This section contains the collection description."} // Make sure to provide the description here
+            avatarUri={userData.avatar.uri}
+            username={userData.username}
           />
           <FlatList
             onViewableItemsChanged={onViewableItemsChanged}
@@ -117,6 +127,14 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
               { useNativeDriver: false } // Make sure to set this to false
             )}
           />
+          <View style={styles.footer}>
+            <Text style={styles.footerText}>
+              Username: {userData?.username}
+            </Text>
+            <Text style={styles.footerText}>
+              Created At: {sortedData[0].createdAt}
+            </Text>
+          </View>
         </View>
       )}
     </SafeAreaView>
@@ -129,5 +147,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "white",
+  },
+  footer: {
+    padding: 16,
+    backgroundColor: "transparent",
+  },
+  footerText: {
+    fontSize: 12,
+    color: "lightgray",
   },
 });

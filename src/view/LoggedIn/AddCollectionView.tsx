@@ -136,14 +136,14 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
             {/* Added cover image and TextInput in the modal */}
             <View style={styles.coverContainer}>
               <Image
-                source={{ uri: cover }}
+                source={{ uri: imageList[0].uri }}
                 style={styles.modalCoverImage}
                 onError={(error) => console.log(error)}
               />
               <TextInput
                 style={styles.titleInput}
-                placeholder="Collection Title"
-                placeholderTextColor="white"
+                placeholder="Title Collection"
+                placeholderTextColor="rgba(255,255,255,0.5)"
                 value={collectionTitle}
                 onChangeText={setCollectionTitle}
               />
@@ -199,19 +199,6 @@ const styles = StyleSheet.create({
     resizeMode: "contain",
     alignSelf: "center",
   },
-  modalCoverImage: {
-    position: "absolute",
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
-  },
-  coverContainer: {
-    width: "100%",
-    height: 200, // Adjust as needed
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 20, // Space after the cover
-  },
   titleInput: {
     color: "white",
     fontSize: 24,
@@ -226,17 +213,35 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
     //TODO: Add blur effect to background
     // backdropFilter: "blur(5px)",
   },
   modalContent: {
-    backgroundColor: "white",
-    padding: 40,
+    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    padding: 4,
     borderRadius: 10,
     elevation: 5,
     width: "70%",
     height: "auto",
+  },
+  coverContainer: {
+    width: "100%",
+    height: 200, // Adjust as needed
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20, // Space after the cover
+    alignSelf: "center",
+  },
+  modalCoverImage: {
+    position: "absolute",
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+    borderRadius: 10, // To round the corners
+    marginTop: 10, // To add 10px of margin from the top
+    marginLeft: 10, // To add 10px of margin from the left
+    marginRight: 10,
   },
   modalTitle: {
     fontSize: 20,
@@ -245,8 +250,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalSubtitle: {
-    fontSize: 12,
+    fontSize: 14, // increased font size for better readability
     marginBottom: 5,
+    color: "#212121", // changed text color to a dark gray
   },
   textInput: {
     borderWidth: 1,
@@ -288,24 +294,28 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   cancelButton: {
+    backgroundColor: "#f0f0f0", // changed background color to a light gray
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
+    borderColor: "lightgray", // added a light gray border
+    borderWidth: 1,
   },
   cancelButtonText: {
-    color: "red",
+    color: "#212121", // changed text color to a dark gray
     fontSize: 16,
   },
   confirmButton: {
-    backgroundColor: "black",
+    backgroundColor: "#4CAF50", // changed background color to a green
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#388E3C", // changed border color to a darker green
   },
+
   confirmButtonText: {
-    color: "white",
+    color: "white", // unchanged
   },
 });
 

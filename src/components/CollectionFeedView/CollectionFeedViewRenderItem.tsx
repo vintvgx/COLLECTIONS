@@ -16,8 +16,8 @@ const CollectionFeedViewRenderItem: React.FC<RenderItemProps> = ({ item }) => {
     return (
       <View style={styles.imageContainer}>
         <Image
-          resizeMode="contain"
-          source={{ uri: item.image.uri }}
+          resizeMode="cover"
+          source={item.image.uri ? { uri: item.image.uri } : null}
           style={[styles.imageStyles, { height: calculatedHeight }]}
         />
       </View>
@@ -32,7 +32,7 @@ export default CollectionFeedViewRenderItem;
 const styles = StyleSheet.create({
   imageContainer: {
     alignItems: "center",
-    marginVertical: 10,
+    marginVertical: 20,
     flex: 1,
     paddingHorizontal: 20,
   },
@@ -40,5 +40,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "stretch",
     flex: 1,
+    backgroundColor: "lightgray",
   },
 });
