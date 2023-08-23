@@ -15,7 +15,8 @@ type CollectionFeedViewHeaderProps = {
   currentItemIndex: number;
   dataCollectionLength: number;
   sharedFontColor: string;
-  editButton: boolean;
+  isEditButton: boolean;
+  isEditMode: boolean;
   onEditPress?: () => void;
 };
 
@@ -25,7 +26,8 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
   currentItemIndex,
   dataCollectionLength,
   sharedFontColor,
-  editButton,
+  isEditButton,
+  isEditMode,
   onEditPress,
 }) => {
   const navigation = useNavigation();
@@ -55,11 +57,13 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
       <View
         style={[
           styles.rightIcons,
-          editButton ? {} : { justifyContent: "flex-end" },
+          isEditButton ? {} : { justifyContent: "flex-end" },
         ]}>
-        {editButton && (
+        {isEditButton && (
           <TouchableOpacity onPress={onEditPress}>
-            <Text style={{ color: sharedFontColor }}>Edit</Text>
+            <Text style={{ color: sharedFontColor }}>
+              {isEditMode ? "Save" : "Edit"}
+            </Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity onPress={() => navigation.goBack()}>

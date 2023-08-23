@@ -37,6 +37,8 @@ import CollectionFeedViewController from "../../controller/CollectionFeedViewCon
 import CollectionFeedViewContentInfo from "../../components/CollectionFeedView/ColletionFeedViewContentInfo";
 import { RootStackParams } from "../../navigation/Navigation";
 import { ImageCollectionData } from "../../model/types";
+import EditProfileCollectionView from "../../components/CollectionFeedView/EditProfileCollectionView";
+import CollectionFlatListView from "../../components/CollectionFeedView/CollectionFlatListView";
 
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
@@ -122,7 +124,8 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
             currentItemIndex={currentItemIndex}
             dataCollectionLength={profileCollection?.length || 0}
             sharedFontColor={sharedFontColor}
-            editButton={true}
+            isEditButton={true}
+            isEditMode={isEditMode}
             onEditPress={() => {
               setIsEditMode(!isEditMode);
             }}
@@ -137,46 +140,16 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
             username={userData?.username || "N/A"}
           />
           {isEditMode ? (
-            <DraggableFlatList
+            <EditProfileCollectionView
               data={sortedData}
-              renderItem={({ item, index, drag, isActive }) => (
-                <TouchableOpacity
-                  style={{
-                    width: imageDimension,
-                    height: imageDimension,
-                    margin: 2,
-                    justifyContent: "center",
-                    alignItems: "center",
-                    backgroundColor: isActive ? "lightgrey" : "transparent",
-                  }}
-                  onLongPress={drag}>
-                  <Image
-                    source={{ uri: item.image.uri }}
-                    style={{ width: imageDimension, height: imageDimension }}
-                  />
-                  <Text>{index}</Text>
-                </TouchableOpacity>
-              )}
-              keyExtractor={(item, index) => `draggable-item-${index}`}
-              onDragEnd={({ data }) => setSortedData(data)}
-              numColumns={4}
+              scrollY={scrollY}
+              onViewableItemsChanged={onViewableItemsChanged}
             />
           ) : (
-            <FlatList
-              showsVerticalScrollIndicator={false}
-              onViewableItemsChanged={onViewableItemsChanged}
-              viewabilityConfig={{
-                itemVisiblePercentThreshold: 50, // adjust this value as needed
-              }}
+            <CollectionFlatListView
               data={sortedData}
-              renderItem={({ item }) => (
-                <CollectionFeedViewRenderItem item={item} />
-              )}
-              keyExtractor={(item, index) => index.toString()}
-              onScroll={Animated.event(
-                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: false } // Make sure to set this to false
-              )}
+              scrollY={scrollY}
+              onViewableItemsChanged={onViewableItemsChanged}
             />
           )}
           <View style={styles.footer}>
