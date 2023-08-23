@@ -8,6 +8,7 @@ export interface DataState {
   filenames: string[];
   collectionsData: ImageCollectionData[] | undefined;
   feedData: ImageCollectionData[] | undefined;
+  profileCollection: ImageCollectionData[] | undefined;
   isLoading: boolean;
   isRefreshing: boolean;
   error: string | null;
@@ -37,10 +38,7 @@ export interface ImageCollectionData {
   title: string;
   createdAt?: string;
   userData?: UserData;
-}
-
-export interface Collections extends ImageCollectionData {
-  collections: ImageCollectionData[];
+  cover?: ImageData;
 }
 
 export interface SectionItem {
@@ -80,7 +78,7 @@ export interface UserData {
 }
 
 export interface ProfileUser {
-  userData: UserData | undefined;
+  userData: UserData;
   isProfileSet: boolean;
   isLoading: boolean;
   error: string | null;

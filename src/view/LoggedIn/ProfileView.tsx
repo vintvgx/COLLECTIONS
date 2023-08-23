@@ -41,7 +41,7 @@ const ProfileView: React.FC = () => {
 
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
   const { avatar, username } = useAppSelector(
-    (state) => state.userData.userData
+    (state: any) => state.userData.userData
   );
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -49,14 +49,14 @@ const ProfileView: React.FC = () => {
     dispatch(fetchUserData());
     dispatch(fetchFilenames());
 
-    const unsubscribe = navigation.addListener("focus", () => {
-      // Fetch updated user data when the screen comes into focus
-      dispatch(fetchUserData());
-      dispatch(fetchFilenames());
-    });
+    // const unsubscribe = navigation.addListener("focus", () => {
+    //   // Fetch updated user data when the screen comes into focus
+    //   dispatch(fetchUserData());
+    //   dispatch(fetchFilenames());
+    // });
 
-    // Cleanup the listener when the component unmounts
-    return unsubscribe;
+    // // Cleanup the listener when the component unmounts
+    // return unsubscribe;
   }, [navigation, dispatch]);
 
   useEffect(() => {
@@ -76,6 +76,19 @@ const ProfileView: React.FC = () => {
       console.log("User signed out!");
     } catch (error) {
       console.error("Error signing out: ", error);
+    }
+  };
+
+  const handleImagePress = (imageData: {
+    image?: { title?: string; uid?: string };
+  }) => {
+    if (imageData?.image) {
+      navigation.navigate("ProfileCollectionView", {
+        title: imageData.image.title,
+        uid: imageData.image.uid,
+      });
+    } else {
+      console.error("Invalid imageData:", imageData);
     }
   };
 
@@ -110,7 +123,17 @@ const ProfileView: React.FC = () => {
               data={formattedData}
               numColumns={2}
               keyExtractor={(item, index) => index.toString()}
-              renderItem={({ item }) => <ProfileImageCard item={item} />}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  activeOpacity={1}
+                  onPress={() =>
+                    handleImagePress({
+                      image: { title: item.title, uid: item.image.uid },
+                    })
+                  }>
+                  <ProfileImageCard item={item} />
+                </TouchableOpacity>
+              )}
               contentContainerStyle={{
                 paddingHorizontal: 24,
                 alignSelf: "stretch",

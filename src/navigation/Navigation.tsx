@@ -21,6 +21,7 @@ import RegisterView from "../view/LoggedOut/RegisterView";
 import CreatorView from "../view/LoggedIn/CreatorView";
 import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
 import AddCollectionView from "../view/LoggedIn/AddCollectionView";
+import ProfileCollectionView from "../view/LoggedIn/ProfileCollectionView";
 
 import { Ionicons } from "@expo/vector-icons";
 import { LoginProps } from "../model/types";
@@ -28,17 +29,6 @@ import { LoginProps } from "../model/types";
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator<RootStackParams>();
 const MainStack = createNativeStackNavigator<MainStackParams>();
-
-/* How to use Navigation in screens:
-
-import { RootStackParams } from "../navigation/Navigation";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
-
-call : navigation.navigate("Home");
-*/
 
 export type RootStackParams = {
   RegisterSplashScreen: any;
@@ -53,6 +43,10 @@ export type RootStackParams = {
   AddCollectionView: {
     images: any;
   };
+  ProfileCollectionView: {
+    title: string;
+    uid: string;
+  };
   ProfileSettings: any;
   PersonalDetails: any;
 };
@@ -65,6 +59,10 @@ export type MainStackParams = {
     images: any;
   };
   CollectionFeedView: {
+    title: string;
+    uid: string;
+  };
+  ProfileCollectionView: {
     title: string;
     uid: string;
   };
@@ -88,6 +86,11 @@ export const MAIN = () => {
         <MainStack.Screen
           name="AddCollectionView"
           component={AddCollectionView}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="ProfileCollectionView"
+          component={ProfileCollectionView}
           options={{ headerShown: false }}
         />
         <MainStack.Screen
@@ -173,6 +176,12 @@ export const HomeStack = () => {
           backgroundColor: "transparent",
           borderTopWidth: 0,
           elevation: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+          paddingVertical: 10,
+          paddingBottom: Platform.OS === "android" ? 20 : 10,
         },
         tabBarVisible: getTabBarVisibility(route),
         tabBarLabel: "",

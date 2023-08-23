@@ -16,7 +16,7 @@ const ProfileImageCard: React.FC<ProfileImageCardProps> = ({ item }) => {
   }
 
   return (
-    <TouchableOpacity key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
+    <View key={item.assetId} style={[{ marginTop: 12, flex: 1 }]}>
       <View
         style={[
           {
@@ -44,7 +44,7 @@ const ProfileImageCard: React.FC<ProfileImageCardProps> = ({ item }) => {
           <Text style={styles.views}>234 views</Text>
         </View>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 

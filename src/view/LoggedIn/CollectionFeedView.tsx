@@ -95,6 +95,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             currentItemIndex={currentItemIndex}
             dataCollectionLength={dataCollection?.length || 0}
             sharedFontColor={sharedFontColor}
+            editButton={false}
           />
           <CollectionFeedViewContentInfo
             headerHeight={headerHeight}
@@ -109,10 +110,11 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             //     : "N/A"
             // }
             description={"This section contains the collection description."} // Make sure to provide the description here
-            avatarUri={userData.avatar.uri}
-            username={userData.username}
+            avatarUri={userData?.avatar.uri || ""}
+            username={userData?.username || "N/A"}
           />
           <FlatList
+            showsVerticalScrollIndicator={false}
             onViewableItemsChanged={onViewableItemsChanged}
             viewabilityConfig={{
               itemVisiblePercentThreshold: 50, // adjust this value as needed

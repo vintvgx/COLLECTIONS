@@ -2,7 +2,7 @@ import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
 import { collection, getDocs } from "firebase/firestore";
 import { auth, db } from "../../utils/firebase/f9_config";
-import { ImageCollectionData, DataState, Collections } from "../../model/types";
+import { ImageCollectionData, DataState } from "../../model/types";
 
 //initial state
 const initialState: DataState = {
@@ -10,6 +10,7 @@ const initialState: DataState = {
   filenames: [],
   feedData: [],
   collectionsData: [],
+  profileCollection: [],
   isLoading: false,
   error: null,
   collectionCovers: [],
@@ -32,6 +33,9 @@ const filenameSlice = createSlice({
     setCollectionCovers: (state, action: PayloadAction<any[]>) => {
       state.collectionCovers = action.payload;
     },
+    setProfileCollection: (state, action: PayloadAction<any[]>) => {
+      state.profileCollection = action.payload;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       (state.isLoading = action.payload), (state.error = null);
     },
@@ -46,6 +50,7 @@ export const {
   setFilenames,
   setCollectionData,
   setCollectionCovers,
+  setProfileCollection,
   setLoading,
   setError,
 } = filenameSlice.actions;
@@ -99,6 +104,31 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
   }
   dispatch(setLoading(false));
 };
+
+export const fetchProfileCollection =
+  (uid: string, title: string) => async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+    try {
+      const collectionRef = `collections/${uid}/files/${title}/images`;
+      const querySnapshot = await getDocs(collection(db, collectionRef));
+
+      const profileCollection: ImageCollectionData[] = [];
+      querySnapshot.forEach((doc) => {
+        profileCollection.push({
+          image: doc.data(),
+          date: doc.data().date,
+          title: doc.data().title,
+        });
+      });
+
+      // dispatch(setCollectionData(profileCollection));
+      dispatch(setProfileCollection(profileCollection));
+    } catch (error) {
+      console.log(error);
+      dispatch(setError("Error fetching profile collection"));
+    }
+    dispatch(setLoading(false));
+  };
 
 export const selectFilenames = (state: RootState) => state.filenames.filenames;
 
