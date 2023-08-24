@@ -61,6 +61,9 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
   const [showTitle, setShowTitle] = useState(true);
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [description, setDescription] = useState(
+    "This section contains the collection description."
+  );
   const [sortedData, setSortedData] = useState<ImageCollectionData[]>([]);
 
   const scrollY = new Animated.Value(0);
@@ -135,15 +138,23 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
             titleOpacity={titleOpacity}
             titleMarginLeft={titleMarginLeft}
             title={title}
-            description={"This section contains the collection description."} // Make sure to provide the description here
+            description={description}
             avatarUri={userData?.avatar.uri || ""}
             username={userData?.username || "N/A"}
+            isEditMode={isEditMode}
+            onDescriptionChange={(newDescription) =>
+              setDescription(newDescription)
+            } // To update the description
           />
           {isEditMode ? (
             <EditProfileCollectionView
               data={sortedData}
               scrollY={scrollY}
               onViewableItemsChanged={onViewableItemsChanged}
+              onOrderChanged={(newOrder) => {
+                // Update the sortedData state or take some other action
+                setSortedData(newOrder);
+              }}
             />
           ) : (
             <CollectionFlatListView
