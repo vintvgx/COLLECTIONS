@@ -75,6 +75,11 @@ export interface UserData {
   username: string;
   bio: string;
   avatar: ImageData | undefined;
+  settings?: ProfileSettings | undefined;
+}
+
+export interface ProfileSettings {
+  darkMode: boolean;
 }
 
 export interface ProfileUser {

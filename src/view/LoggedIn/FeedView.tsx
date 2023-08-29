@@ -9,7 +9,7 @@ import {
   View,
   Animated,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 
 import { AppDispatch } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
@@ -25,9 +25,16 @@ import { logFeedData } from "../../utils/functions";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigation/Navigation";
+import { useTheme } from "../../theme/themeContext";
 
 const FeedView: React.FC = () => {
   const dispatch: AppDispatch = useDispatch();
+  const { darkMode } = useTheme();
+  const theme = {
+    backgroundColor: darkMode ? "#000" : "#fff",
+    color: darkMode ? "#fff" : "#000",
+  };
+
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
@@ -133,52 +140,59 @@ const FeedView: React.FC = () => {
   });
 
   return (
-    <View style={styles.container}>
-      <Animated.View
-        style={{
-          height: headerHeight,
-          marginTop: headerHeight,
-          marginBottom: 20,
-          opacity: headerOpacity,
-        }}>
-        <TouchableOpacity>
-          <Text
-            style={{
-              alignSelf: "center",
-              fontSize: scrollPosition > 100 ? 0 : 25,
-              fontWeight: "700",
-            }}>
-            COLLECTIONS+
-          </Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      <Animated.FlatList
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={handleOnRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: animatedScrollPosition } } }], // Notice the change here
-          { useNativeDriver: false } // Make sure to set this to false
-        )}
-        ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
-        data={feedCovers}
-        onEndReached={fetchMoreFeedData} // call function to fetch more data
-        onEndReachedThreshold={0.9} // fetch more data when the end of the list is half a screen away
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            activeOpacity={1}
-            onPress={() =>
-              handleImagePress({
-                image: { title: item.title, uid: item.image.uid },
-              })
-            }>
-            <RenderItem item={item} />
+    <View
+      style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
+      <View style={{ marginTop: 40 }}>
+        <Animated.View
+          style={{
+            height: headerHeight,
+            marginTop: headerHeight,
+            marginBottom: 20,
+            opacity: headerOpacity,
+          }}>
+          <TouchableOpacity>
+            <Text
+              style={{
+                alignSelf: "center",
+                fontSize: scrollPosition > 100 ? 0 : 25,
+                fontWeight: "700",
+                color: theme.textColor,
+              }}>
+              COLLECTIONS+
+            </Text>
           </TouchableOpacity>
-        )}
-        keyExtractor={(item, index) => item.image.fileName.toString() + index}
-      />
+        </Animated.View>
+
+        <Animated.FlatList
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={handleOnRefresh}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: animatedScrollPosition } } }], // Notice the change here
+            { useNativeDriver: false } // Make sure to set this to false
+          )}
+          ListFooterComponent={loadingMore ? <ActivityIndicator /> : null}
+          data={feedCovers}
+          onEndReached={fetchMoreFeedData} // call function to fetch more data
+          onEndReachedThreshold={0.9} // fetch more data when the end of the list is half a screen away
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={1}
+              onPress={() =>
+                handleImagePress({
+                  image: { title: item.title, uid: item.image.uid },
+                })
+              }>
+              <RenderItem item={item} />
+            </TouchableOpacity>
+          )}
+          keyExtractor={(item, index) => item.image.fileName.toString() + index}
+        />
+      </View>
     </View>
   );
 };
@@ -188,7 +202,7 @@ export default FeedView;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 40,
+    // marginTop: 40,
   },
 
   body: {

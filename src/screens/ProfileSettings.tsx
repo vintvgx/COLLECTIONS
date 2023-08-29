@@ -8,24 +8,42 @@ import {
   Switch,
   Button,
   TextInput,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
-import React, { useEffect, useState } from "react";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React, { useContext, useEffect, useState } from "react";
+import { EventRegister } from "react-native-event-listeners";
+
 import { UserData, ProfileUser } from "../model/types";
 import { PROFILE_SETTINGS_SECTIONS } from "../constants/ProfileSettings_Section";
-import { saveUserData, fetchUserData } from "../redux_toolkit/slices/user_data";
-import { MaterialIcons } from "@expo/vector-icons";
+import {
+  saveUserData,
+  fetchUserData,
+  setDarkMode,
+} from "../redux_toolkit/slices/user_data";
+
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { Section, SectionItem } from "../model/types";
 import { useAppSelector } from "../redux_toolkit";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../theme/themeContext";
 
 const ProfileSettings: React.FC = ({}) => {
   const dispatch = useDispatch();
 
-  const { firstName, lastName, username, bio, avatar } = useAppSelector(
-    (state) => state.userData.userData
-  );
+  const { darkMode, toggleDarkMode } = useTheme();
+  const theme = {
+    backgroundColor: darkMode ? "#000" : "#fff",
+    color: darkMode ? "#fff" : "#000",
+  };
+
+  const { firstName, lastName, username, bio, avatar, settings } =
+    useAppSelector((state) => state.userData.userData);
 
   const [formData, setFormData] = useState<UserData>({
     firstName: firstName,
@@ -72,27 +90,29 @@ const ProfileSettings: React.FC = ({}) => {
   };
 
   return (
-    <SafeAreaView style={{ backgroundColor: "#f6f6f6" }}>
-      {/* <Button
-        title="Save"
-        onPress={() => {
-          handleSave();
-          //@ts-ignore
-          dispatch(fetchUserData());
-        }}
-      /> */}
+    <SafeAreaView style={{ backgroundColor: theme.backgroundColor, flex: 1 }}>
+      <StatusBar barStyle={darkMode ? "light-content" : "dark-content"} />
+      {/* HEADER */}
       <View style={styles.header}>
         <View style={{ flexDirection: "row" }}>
           <TouchableOpacity onPress={handleGoBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color="black" />
+            <MaterialIcons
+              name="arrow-back"
+              size={24}
+              color={darkMode ? "white" : "black"}
+            />
           </TouchableOpacity>
-          <Text style={styles.title}>Profile Settings</Text>
+          <Text style={[styles.title, { color: theme.color }]}>
+            Profile Settings
+          </Text>
         </View>
         <Text style={styles.subtitle}>
           Set Profile View settings & user configuration
         </Text>
       </View>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
+        {/* USER DATA */}
         <View style={styles.profile_header}>
           <TouchableOpacity style={styles.circle}>
             {avatar?.uri ? (
@@ -103,55 +123,82 @@ const ProfileSettings: React.FC = ({}) => {
           </TouchableOpacity>
           <View style={{ marginLeft: 30, marginTop: 20 }}>
             <View style={{ flexDirection: "row" }}>
-              <Text style={[styles.profile_header_text]}>{firstName}</Text>
-              <Text style={[styles.profile_header_text, { marginLeft: 10 }]}>
+              <Text
+                style={[styles.profile_header_text, { color: theme.color }]}>
+                {firstName}
+              </Text>
+              <Text
+                style={[
+                  styles.profile_header_text,
+                  { color: theme.color, marginLeft: 10 },
+                ]}>
                 {lastName}
               </Text>
             </View>
-            <Text style={[styles.profile_header_text, { marginTop: 10 }]}>
+            <Text
+              style={[
+                styles.profile_header_text,
+                { color: theme.color, marginTop: 10 },
+              ]}>
               {username}
             </Text>
-            <Text style={[styles.profile_header_text, { marginTop: 10 }]}>
+            <Text
+              style={[
+                styles.profile_header_text,
+                { color: theme.color, marginTop: 10 },
+              ]}>
               {bio}
             </Text>
-            {/* <View style={styles.profile_info}>
-                <Text style={styles.label}>{firstName}</Text>
-                <TextInput
-                  value={formData.firstName}
-                  onChangeText={(value) => handleChange("firstName", value)}
-                  style={styles.textInput}
-                />
-              </View>
-              <View>
-                <View style={styles.profile_info}>
-                  <Text style={styles.label}>{lastName}</Text>
-                  <TextInput
-                    value={formData.lastName}
-                    onChangeText={(value) => handleChange("lastName", value)}
-                    style={styles.textInput}
-                  />
-                </View>
-                <View style={styles.profile_info}>
-                  <Text style={styles.label}>{username}</Text>
-                  <TextInput
-                    value={formData.username}
-                    onChangeText={(value) => handleChange("username", value)}
-                    style={styles.textInput}
-                  />
-                </View>
-                <View style={styles.profile_info}>
-                  <Text style={styles.label}>{bio}</Text>
-                  <TextInput
-                    value={formData.bio}
-                    onChangeText={(value) => handleChange("bio", value)}
-                    style={styles.textInput}
-                    multiline
-                  />
-                </View>
-              </View> */}
           </View>
         </View>
-        {PROFILE_SETTINGS_SECTIONS.map(({ header, items }: Section) => (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionHeaderText}>Settings</Text>
+          </View>
+          <View
+            style={[
+              styles.rowWrapper,
+              { backgroundColor: darkMode ? "#D3D3D3" : "white" },
+            ]}>
+            <TouchableOpacity
+              onPress={() => navigateToScreen("PersonalDetails")}>
+              <View style={styles.row}>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Ionicons
+                    name="person-circle-outline"
+                    size={24}
+                    color="black"
+                  />
+                  <Text style={{ marginRight: 2 }}>Personal Details</Text>
+                </View>
+                <MaterialIcons
+                  name="arrow-forward-ios"
+                  size={18}
+                  color="black"
+                />
+              </View>
+            </TouchableOpacity>
+            <View style={styles.row}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <MaterialCommunityIcons
+                  name="theme-light-dark"
+                  size={24}
+                  color="black"
+                />
+                <Text style={{ marginRight: 2 }}>Light/Dark Mode</Text>
+              </View>
+              <Switch
+                value={darkMode}
+                onValueChange={() => {
+                  toggleDarkMode();
+                  dispatch(setDarkMode);
+                }}
+              />
+            </View>
+          </View>
+        </View>
+
+        {/* {PROFILE_SETTINGS_SECTIONS.map(({ header, items }: Section) => (
           <View style={styles.section} key={header}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionHeaderText}>{header}</Text>
@@ -194,9 +241,9 @@ const ProfileSettings: React.FC = ({}) => {
               )}
             </View>
           </View>
-        ))}
+        ))} */}
       </ScrollView>
-      <Button title="Save" onPress={handleSave} />
+      {/* <Button title="Save" onPress={handleSave} /> */}
     </SafeAreaView>
   );
 };
@@ -298,7 +345,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     paddingRight: 24,
     height: 50,
   },

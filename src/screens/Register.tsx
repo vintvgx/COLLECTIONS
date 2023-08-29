@@ -1,5 +1,12 @@
-import { Keyboard, StyleSheet, Text, View } from "react-native";
-import React, { useState, useEffect } from "react";
+import {
+  Keyboard,
+  StyleSheet,
+  Text,
+  View,
+  Appearance,
+  useColorScheme,
+} from "react-native";
+import React, { useState, useEffect, useContext } from "react";
 import { unwrapResult } from "@reduxjs/toolkit";
 
 import { TextField } from "../components/TextField";
@@ -12,6 +19,7 @@ import { useDispatch } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParams } from "../navigation/Navigation";
+import { useTheme } from "../theme/themeContext";
 
 interface LoginProps {
   OnUserLogin: Function;
@@ -29,7 +37,13 @@ const _RegisterScreen: React.FC<LoginProps> = ({
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   const dispatch = useDispatch();
+  const { darkMode } = useTheme();
+  const theme = {
+    backgroundColor: darkMode ? "#000" : "#fff",
+    color: darkMode ? "#fff" : "#000",
+  };
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
@@ -81,7 +95,8 @@ const _RegisterScreen: React.FC<LoginProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, { backgroundColor: theme.backgroundColor }]}>
       <View style={styles.body}>
         <TextField
           placeholder="Email ID"

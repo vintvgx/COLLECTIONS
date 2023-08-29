@@ -1,4 +1,11 @@
-import { Keyboard, StyleSheet, Text, View } from "react-native";
+import {
+  Keyboard,
+  StyleSheet,
+  Text,
+  useColorScheme,
+  View,
+  Appearance,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 
@@ -14,6 +21,8 @@ interface LoginProps {
   OnUserSignup: Function;
 }
 
+const colorScheme = Appearance.getColorScheme();
+
 const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
@@ -21,6 +30,10 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    console.log("COLOR", colorScheme);
+  }, [colorScheme]);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
@@ -94,6 +107,7 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colorScheme === "dark" ? "#222" : "#fff",
   },
   body: {
     flex: 9,
