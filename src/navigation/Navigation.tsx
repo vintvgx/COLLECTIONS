@@ -31,6 +31,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { LoginProps } from "../model/types";
 import { EventRegister } from "react-native-event-listeners";
 import { useTheme } from "../theme/themeContext";
+import { OnUserLogin, OnUserSignup } from "../redux_toolkit/slices/authSlice";
 
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator<RootStackParams>();
@@ -38,7 +39,7 @@ const MainStack = createNativeStackNavigator<MainStackParams>();
 
 export type RootStackParams = {
   RegisterSplashScreen: any;
-  Register: LoginProps;
+  RegisterView: LoginProps;
   RegisterSetupProfileView: any;
   Home: any;
   CollectionFeedView: {
@@ -127,8 +128,13 @@ export const RegisterStack = () => {
           options={{ headerShown: false }}
         />
         <RootStack.Screen
-          name="Register"
-          component={RegisterScreen}
+          name="RegisterView"
+          children={() => (
+            <RegisterView
+              OnUserLogin={OnUserLogin}
+              OnUserSignup={OnUserSignup}
+            />
+          )}
           options={{ headerShown: false }}
         />
         <RootStack.Screen

@@ -60,14 +60,14 @@ const ProfileView: React.FC = () => {
     dispatch(fetchUserData());
     dispatch(fetchFilenames());
 
-    // const unsubscribe = navigation.addListener("focus", () => {
-    //   // Fetch updated user data when the screen comes into focus
-    //   dispatch(fetchUserData());
-    //   dispatch(fetchFilenames());
-    // });
+    const unsubscribe = navigation.addListener("focus", () => {
+      // Fetch updated user data when the screen comes into focus
+      dispatch(fetchUserData());
+      dispatch(fetchFilenames());
+    });
 
-    // // Cleanup the listener when the component unmounts
-    // return unsubscribe;
+    // Cleanup the listener when the component unmounts
+    return unsubscribe;
   }, [navigation, dispatch]);
 
   useEffect(() => {

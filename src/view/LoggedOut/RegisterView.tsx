@@ -2,9 +2,8 @@ import {
   Keyboard,
   StyleSheet,
   Text,
-  useColorScheme,
+  TouchableOpacity,
   View,
-  Appearance,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
@@ -16,12 +15,11 @@ import { OnUserLogin } from "../../redux_toolkit/slices/authSlice";
 import { OnUserSignup } from "../../redux_toolkit/slices/authSlice";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigation/Navigation";
+
 interface LoginProps {
   OnUserLogin: Function;
   OnUserSignup: Function;
 }
-
-const colorScheme = Appearance.getColorScheme();
 
 const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [email, setEmail] = useState("");
@@ -30,10 +28,6 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
   const dispatch = useDispatch();
-
-  useEffect(() => {
-    console.log("COLOR", colorScheme);
-  }, [colorScheme]);
 
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
@@ -59,6 +53,9 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
 
   return (
     <View style={styles.container}>
+      {/* App Title */}
+      <Text style={styles.title}>Collections</Text>
+
       <View style={styles.body}>
         <TextField
           placeholder="Email ID"
@@ -88,17 +85,18 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
           onTap={onTapAuthenticate}
         />
 
-        <ButtonWithTitle
-          title={
-            !isSignup
-              ? "No Account? Signup Here"
-              : "Have an Account? Login Here"
-          }
-          height={50}
-          width={350}
-          onTap={onTapOptions}
-          isNoBg={true}
-        />
+        <TouchableOpacity onPress={onTapOptions} style={styles.optionsButton}>
+          <Text style={styles.optionsText}>
+            {isSignup
+              ? "Already have an account? Login"
+              : "Don't have an account? Sign Up"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Futura+ &copy; 2023</Text>
       </View>
     </View>
   );
@@ -107,16 +105,36 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colorScheme === "dark" ? "#222" : "#fff",
-  },
-  body: {
-    flex: 9,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#fff", // Background color
+  },
+  body: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  optionsButton: {
+    marginTop: 20,
+  },
+  optionsText: {
+    color: "#3498db", // Highlight color
+    fontSize: 16,
   },
   footer: {
-    flex: 2,
     justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  footerText: {
+    color: "#ccc", // Soft light gray
+    fontSize: 12,
   },
 });
 
