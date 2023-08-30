@@ -1,6 +1,6 @@
 # Multi-Image Sharing Mobile App with React Native, Redux Toolkit & Firebase
 
-Welcome to the repository of our Mobile Zine app, where users can share and display multiple images as collections and tell their stories via an editorial section. This app is built using React Native with TypeScript and integrated with Redux Toolkit for state management and Firebase for data storage and authentication.
+Welcome to the repository of COLLECTIONS, where users can share and display multiple images as collections and tell their stories via an editorial section. This app is built using React Native with TypeScript and integrated with Redux Toolkit for state management and Firebase for data storage and authentication.
 
 ## Features
 
@@ -66,16 +66,6 @@ Welcome to the repository of our Mobile Zine app, where users can share and disp
    
 - `assets/`: Static files like images, fonts, etc.
 
-## Contributing
 
-If you wish to contribute, please fork the repository and create a pull request. We'd love to merge your changes!
-
-## Feedback and Issues
-
-If you encounter any issues or want to provide feedback, please open an issue. We appreciate your input!
-
-## License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more information.
 
 
