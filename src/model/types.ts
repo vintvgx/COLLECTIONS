@@ -8,9 +8,10 @@ export interface DataState {
   filenames: string[];
   collectionsData: ImageCollectionData[] | undefined;
   feedData: ImageCollectionData[] | undefined;
+  profileCollection: ImageCollectionData[] | undefined;
   isLoading: boolean;
   isRefreshing: boolean;
-  error: string | null;
+  error: string | undefined;
   collectionCovers: ImageCollectionData[] | undefined;
   needsReset: boolean;
   feedCollectionCovers: ImageCollectionData[] | undefined;
@@ -37,10 +38,8 @@ export interface ImageCollectionData {
   title: string;
   createdAt?: string;
   userData?: UserData;
-}
-
-export interface Collections extends ImageCollectionData {
-  collections: ImageCollectionData[];
+  cover?: ImageData;
+  description?: string | undefined;
 }
 
 export interface SectionItem {
@@ -77,10 +76,15 @@ export interface UserData {
   username: string;
   bio: string;
   avatar: ImageData | undefined;
+  settings?: ProfileSettings | undefined;
+}
+
+export interface ProfileSettings {
+  darkMode: boolean;
 }
 
 export interface ProfileUser {
-  userData: UserData | undefined;
+  userData: UserData;
   isProfileSet: boolean;
   isLoading: boolean;
   error: string | null;
@@ -97,4 +101,11 @@ export interface ViewToken {
   index: number | null; // Index of the item in the data array.
   isViewable: boolean; // Whether the item is currently viewable.
   section?: any; // If using sections in FlatList, this will be the section data.
+}
+
+export interface UpdateProfilePayload {
+  uid: string;
+  title: string;
+  updatedData: ImageCollectionData[];
+  updatedDescription: string;
 }

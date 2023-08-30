@@ -10,6 +10,10 @@ import { setLoggedIn } from "./src/redux_toolkit/slices/authSlice";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { EventRegister } from "react-native-event-listeners";
+import { ThemeProvider } from "./src/theme/themeContext";
+
 import { HomeStack } from "./src/navigation/Navigation";
 import { RegisterStack } from "./src/navigation/Navigation";
 import { MAIN } from "./src/navigation/Navigation";
@@ -21,6 +25,7 @@ import {
 
 const Root = () => {
   const dispatch: AppDispatch = useDispatch();
+
   const { isLoggedIn } = useAppSelector((state) => state.auth);
   const { isProfileSet } = useAppSelector((state) => state.userData);
 
@@ -69,7 +74,9 @@ const Root = () => {
 export default function App() {
   return (
     <Provider store={store}>
-      <Root />
+      <ThemeProvider>
+        <Root />
+      </ThemeProvider>
     </Provider>
   );
 }

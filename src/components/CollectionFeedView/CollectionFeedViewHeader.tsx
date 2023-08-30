@@ -15,6 +15,9 @@ type CollectionFeedViewHeaderProps = {
   currentItemIndex: number;
   dataCollectionLength: number;
   sharedFontColor: string;
+  isEditButton: boolean;
+  isEditMode: boolean;
+  onEditPress?: () => void;
 };
 
 const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
@@ -23,25 +26,48 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
   currentItemIndex,
   dataCollectionLength,
   sharedFontColor,
+  isEditButton,
+  isEditMode,
+  onEditPress,
 }) => {
   const navigation = useNavigation();
 
   return (
     <View style={styles.header}>
+      <View style={styles.leftIcons}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Text style={{ color: sharedFontColor }}>Back</Text>
+        </TouchableOpacity>
+        <Animated.Text
+          style={{
+            color: sharedFontColor,
+            opacity: headerTitleFade,
+            marginLeft: 3,
+          }}>
+          {`${currentItemIndex}/${dataCollectionLength}`}
+        </Animated.Text>
+      </View>
       <Animated.Text
-        style={{ color: sharedFontColor, opacity: headerTitleFade }}>
-        {`${currentItemIndex}/${dataCollectionLength}`}
-      </Animated.Text>
-      <Animated.Text
-        style={[styles.header_title_text, { opacity: headerTitleFade }]}>
+        style={[
+          styles.header_title_text,
+          { opacity: headerTitleFade, pointerEvents: "none" },
+        ]}>
         {title}
       </Animated.Text>
-      <View style={styles.rightIcons}>
+      <View
+        style={[
+          styles.rightIcons,
+          isEditButton ? {} : { justifyContent: "flex-end" },
+        ]}>
+        {isEditButton && (
+          <TouchableOpacity onPress={onEditPress}>
+            <Text style={{ color: sharedFontColor }}>
+              {isEditMode ? "Save" : "Edit"}
+            </Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Feather name="menu" size={20} color="black"></Feather>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={{ color: sharedFontColor }}>Done</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -56,6 +82,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     alignItems: "center",
   },
+  leftIcons: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-start",
+  },
   rightIcons: {
     flexDirection: "row",
     alignItems: "center",
@@ -65,6 +96,11 @@ const styles = StyleSheet.create({
   header_title_text: {
     fontSize: 15,
     fontWeight: "bold",
+    position: "absolute",
+    left: 0,
+    right: 0,
+    textAlign: "center",
+    zIndex: 1,
   },
 });
 

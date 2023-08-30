@@ -162,3 +162,51 @@ export const userSignOut = () => {
     console.log("SIGNED OUT");
   });
 };
+
+//* UPDATE COLLECTION FROM PROFILE WHEN IN EDIT MODE
+export const updateProfileCollection = async (
+  uid,
+  title,
+  updatedImages, // Assume this is an array of updated images with new ids
+  updatedDescription
+) => {
+  try {
+    // First, update the description for the collection
+    const collectionRef = doc(db, `collections/${uid}/filenames`, title);
+
+    await updateDoc(collectionRef, {
+      description: updatedDescription,
+    }).catch((error) => {
+      console.error("Error updating collection description:", error);
+      throw error;
+    });
+
+    // Loop through each updated image and update only the id field in Firestore
+    for (const updatedImage of updatedImages) {
+      const img_firestore_ref = doc(
+        db,
+        "collections",
+        uid,
+        "files",
+        title,
+        "images",
+        updatedImage.image.fileName
+      );
+
+      // Update only the 'id' field for this Firestore document
+      await updateDoc(img_firestore_ref, { id: updatedImage.image.id }).catch(
+        (error) => {
+          console.error(
+            "Error updating image id:",
+            updatedImage.fileName,
+            error
+          );
+          throw error;
+        }
+      );
+    }
+    console.log("Successfully updated collection");
+  } catch (error) {
+    console.error("General error updating collection:", error);
+  }
+};

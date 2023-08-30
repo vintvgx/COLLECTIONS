@@ -46,6 +46,9 @@ const initialState: ProfileUser = {
       uri: "",
       width: 2,
     },
+    settings: {
+      darkMode: false,
+    },
   },
   isProfileSet: false,
   isLoading: false,
@@ -62,6 +65,10 @@ const userDataSlice = createSlice({
     setIsProfileSet: (state, action: PayloadAction<boolean>) => {
       state.isProfileSet = action.payload;
     },
+    setDarkMode: (state, action: PayloadAction<boolean>) => {
+      if (state.userData.settings?.darkMode)
+        state.userData.settings.darkMode = action.payload;
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
       state.error = null;
@@ -73,8 +80,13 @@ const userDataSlice = createSlice({
   },
 });
 
-export const { setUserData, setIsProfileSet, setLoading, setError } =
-  userDataSlice.actions;
+export const {
+  setUserData,
+  setIsProfileSet,
+  setLoading,
+  setError,
+  setDarkMode,
+} = userDataSlice.actions;
 
 export const saveUserData =
   (userData: UserData) => async (dispatch: AppDispatch) => {
@@ -205,6 +217,40 @@ export const fetchUserData =
       dispatch(setLoading(false));
     }
     return initialState;
+  };
+
+export const setDarkModeInFirebase =
+  (darkMode: boolean) => async (dispatch: AppDispatch) => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          "settings.darkMode": darkMode,
+        });
+        dispatch(setDarkMode(darkMode)); // Update local Redux store
+      } catch (error) {
+        dispatch(setError("Error setting dark mode"));
+      }
+    }
+  };
+
+export const fetchDarkModeFromFirebase =
+  () => async (dispatch: AppDispatch) => {
+    const user = auth.currentUser;
+    if (user) {
+      try {
+        const userRef = doc(db, "users", user.uid);
+        const userSnapshot = await getDoc(userRef);
+        if (userSnapshot.exists()) {
+          const userData = userSnapshot.data() as UserData;
+          const darkMode = userData.settings?.darkMode ?? false;
+          dispatch(setDarkMode(darkMode)); // Update local Redux store
+        }
+      } catch (error) {
+        dispatch(setError("Error fetching dark mode"));
+      }
+    }
   };
 
 export const selectUserData = (state: RootState) => state.userData.userData;

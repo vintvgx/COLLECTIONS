@@ -1,4 +1,4 @@
-import { Animated, View, Text, Image } from "react-native";
+import { Animated, View, Text, Image, TextInput } from "react-native";
 import { StyleSheet } from "react-native";
 import { sharedFontColor, sharedBackgroundColor } from "../../utils/global";
 
@@ -11,6 +11,8 @@ type CollectionFeedViewContentInfoProps = {
   description: string;
   avatarUri: string;
   username: string;
+  isEditMode: boolean;
+  onDescriptionChange: (newDescription: string) => void;
 };
 
 const CollectionFeedViewContentInfo: React.FC<
@@ -24,6 +26,8 @@ const CollectionFeedViewContentInfo: React.FC<
   description,
   avatarUri,
   username,
+  isEditMode,
+  onDescriptionChange,
 }) => {
   const shadowOpacity = headerHeight.interpolate({
     inputRange: [0, 200],
@@ -70,13 +74,27 @@ const CollectionFeedViewContentInfo: React.FC<
           ]}>
           {createdAt}
         </Animated.Text>
-        <Animated.Text
-          style={[
-            styles.details_text,
-            { opacity: titleOpacity, marginLeft: titleMarginLeft },
-          ]}>
-          {description}
-        </Animated.Text>
+        {isEditMode ? (
+          <Animated.View style={styles.editModeWrapper}>
+            <TextInput
+              value={description}
+              onChangeText={onDescriptionChange}
+              style={styles.descriptionInput}
+              placeholder="Edit description..."
+              multiline
+              numberOfLines={3}
+            />
+            <Text style={styles.editModeText}>Editing</Text>
+          </Animated.View>
+        ) : (
+          <Animated.Text
+            style={[
+              styles.details_text,
+              { opacity: titleOpacity, marginLeft: titleMarginLeft },
+            ]}>
+            {description}
+          </Animated.Text>
+        )}
       </Animated.View>
       <Animated.View style={styles.rightSide}>
         <Animated.Image
@@ -146,5 +164,27 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#808080",
     marginTop: 5,
+  },
+  editModeWrapper: {
+    backgroundColor: "#f8f9fa", // Slightly lighter gray
+    borderRadius: 10, // Updated radius
+    padding: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  descriptionInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ced4da", // Updated border color
+    borderRadius: 10, // Updated radius
+    padding: 10,
+  },
+  editModeText: {
+    color: "#adb5bd", // Light gray text
+    fontSize: 12,
+    marginLeft: 10,
+    textShadowColor: "rgba(0, 0, 0, 0.3)", // Shadow color
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
 });

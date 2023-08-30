@@ -1,5 +1,9 @@
-import React from "react";
-import { NavigationContainer } from "@react-navigation/native";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  NavigationContainer,
+  DarkTheme,
+  DefaultTheme,
+} from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
@@ -21,24 +25,16 @@ import RegisterView from "../view/LoggedOut/RegisterView";
 import CreatorView from "../view/LoggedIn/CreatorView";
 import CollectionFeedView from "../view/LoggedIn/CollectionFeedView";
 import AddCollectionView from "../view/LoggedIn/AddCollectionView";
+import ProfileCollectionView from "../view/LoggedIn/ProfileCollectionView";
 
 import { Ionicons } from "@expo/vector-icons";
 import { LoginProps } from "../model/types";
+import { EventRegister } from "react-native-event-listeners";
+import { useTheme } from "../theme/themeContext";
 
 const Tab = createBottomTabNavigator();
 const RootStack = createNativeStackNavigator<RootStackParams>();
 const MainStack = createNativeStackNavigator<MainStackParams>();
-
-/* How to use Navigation in screens:
-
-import { RootStackParams } from "../navigation/Navigation";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-
-const navigation = useNavigation<NativeStackNavigationProp<RootStackParams>>();
-
-call : navigation.navigate("Home");
-*/
 
 export type RootStackParams = {
   RegisterSplashScreen: any;
@@ -52,6 +48,10 @@ export type RootStackParams = {
   Creator: any;
   AddCollectionView: {
     images: any;
+  };
+  ProfileCollectionView: {
+    title: string;
+    uid: string;
   };
   ProfileSettings: any;
   PersonalDetails: any;
@@ -68,12 +68,17 @@ export type MainStackParams = {
     title: string;
     uid: string;
   };
+  ProfileCollectionView: {
+    title: string;
+    uid: string;
+  };
 };
 
 //TODO: Add Collection Initial Page detailing App Functionality & Add to Register Stack
 export const MAIN = () => {
+  const { darkMode } = useTheme();
   return (
-    <NavigationContainer>
+    <NavigationContainer theme={darkMode ? DarkTheme : DefaultTheme}>
       <MainStack.Navigator>
         <MainStack.Screen
           name="Home"
@@ -91,6 +96,11 @@ export const MAIN = () => {
           options={{ headerShown: false }}
         />
         <MainStack.Screen
+          name="ProfileCollectionView"
+          component={ProfileCollectionView}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
           name="ProfileSettings"
           component={ProfileSettings}
           options={{ headerShown: false }}
@@ -105,27 +115,31 @@ export const MAIN = () => {
   );
 };
 
-export const RegisterStack = () => (
-  <NavigationContainer>
-    <RootStack.Navigator initialRouteName="RegisterSplashScreen">
-      <RootStack.Screen
-        name="RegisterSplashScreen"
-        component={RegisterSplashScreen}
-        options={{ headerShown: false }}
-      />
-      <RootStack.Screen
-        name="Register"
-        component={RegisterScreen}
-        options={{ headerShown: false }}
-      />
-      <RootStack.Screen
-        name="RegisterSetupProfileView"
-        component={RegisterSetupProfileView}
-        options={{ headerShown: false }}
-      />
-    </RootStack.Navigator>
-  </NavigationContainer>
-);
+export const RegisterStack = () => {
+  const { darkMode } = useTheme();
+
+  return (
+    <NavigationContainer theme={darkMode ? DarkTheme : DefaultTheme}>
+      <RootStack.Navigator initialRouteName="RegisterSplashScreen">
+        <RootStack.Screen
+          name="RegisterSplashScreen"
+          component={RegisterSplashScreen}
+          options={{ headerShown: false }}
+        />
+        <RootStack.Screen
+          name="Register"
+          component={RegisterScreen}
+          options={{ headerShown: false }}
+        />
+        <RootStack.Screen
+          name="RegisterSetupProfileView"
+          component={RegisterSetupProfileView}
+          options={{ headerShown: false }}
+        />
+      </RootStack.Navigator>
+    </NavigationContainer>
+  );
+};
 
 const getTabBarVisibility = (route: any) => {
   const routeName = route.state
@@ -147,6 +161,8 @@ type IconName =
   | "person-outline";
 
 export const HomeStack = () => {
+  const { darkMode } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -170,9 +186,14 @@ export const HomeStack = () => {
           );
         },
         tabBarStyle: {
-          backgroundColor: "transparent",
+          backgroundColor: darkMode ? "#d3d3d3" : "#fff", // Change as per your requirement
           borderTopWidth: 0,
           elevation: 0,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+          paddingVertical: 10,
         },
         tabBarVisible: getTabBarVisibility(route),
         tabBarLabel: "",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useAppSelector } from "../redux_toolkit";
@@ -17,13 +17,19 @@ import FeedSkeletonView from "./FeedSkeletonView";
 import { db } from "../utils/firebase/f9_config";
 import { doc, getDoc } from "firebase/firestore";
 import { UserData } from "../model/types";
+import { useTheme } from "../theme/themeContext";
 
 interface RenderItemProps {
   item: any;
 }
 
 const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
-  const dispatch: AppDispatch = useDispatch();
+  const { darkMode } = useTheme();
+  const theme = {
+    backgroundColor: darkMode ? "#000" : "#fff",
+    color: darkMode ? "#fff" : "#000",
+  };
+
   const [userData, setUserData] = useState<UserData | null>(null);
 
   /**
@@ -97,7 +103,9 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
             marginTop: 10,
           }}>
           <View style={{ marginTop: 2, marginLeft: 5 }}>
-            <Text style={styles.title}>{item.title}</Text>
+            <Text style={[styles.title, { color: theme.color }]}>
+              {item.title}
+            </Text>
             {/* <Text style={styles.views}>{item.createdAt} views</Text> */}
             {/* <Text style={styles.views}>234 views</Text>
             <Text style={styles.views}>{userFriendlyDate}</Text> */}

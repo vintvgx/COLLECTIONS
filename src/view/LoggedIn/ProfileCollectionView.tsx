@@ -1,8 +1,8 @@
 import {
   SafeAreaView,
   StyleSheet,
-  Text,
   View,
+  Text,
   Image,
   FlatList,
   Animated,
@@ -10,14 +10,19 @@ import {
   ViewToken,
   StatusBar,
   Platform,
+  Dimensions,
 } from "react-native";
+import DraggableFlatList from "react-native-draggable-flatlist";
 import React, { useEffect, useRef, useState } from "react";
-import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
-import { RootStackParams } from "../../navigation/Navigation";
-import { useSelector } from "react-redux";
-import { AppDispatch, RootState } from "../../redux_toolkit";
 import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+
+import {
+  fetchProfileCollection,
+  updateProfileCollectionAction,
+} from "../../redux_toolkit/slices";
+import { AppDispatch, RootState } from "../../redux_toolkit";
 
 //components
 import CollectionFeedViewHeader from "../../components/CollectionFeedView/CollectionFeedViewHeader";
@@ -33,26 +38,35 @@ import {
 } from "../../utils/functions";
 import CollectionFeedViewController from "../../controller/CollectionFeedViewController";
 import CollectionFeedViewContentInfo from "../../components/CollectionFeedView/ColletionFeedViewContentInfo";
+import { RootStackParams } from "../../navigation/Navigation";
 import { ImageCollectionData } from "../../model/types";
+import EditProfileCollectionView from "../../components/CollectionFeedView/EditProfileCollectionView";
+import CollectionFlatListView from "../../components/CollectionFeedView/CollectionFlatListView";
 
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
 
-type CollectionFeedViewProps = {
-  route: RouteProp<RootStackParams, "CollectionFeedView">;
+type ProfileCollectionFeedViewProps = {
+  route: RouteProp<RootStackParams, "ProfileCollectionView">;
 };
 
-const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
+const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
+  route,
+}) => {
   const dispatch: AppDispatch = useDispatch();
 
   const { title, uid } = route.params;
-  const dataCollection = useSelector(
-    (state: RootState) => state.feed.collectionsData
+  const profileCollection = useSelector(
+    (state: RootState) => state.filenames.profileCollection
   );
   const userData = useSelector((state: RootState) => state.feed.userData);
 
   const [showTitle, setShowTitle] = useState(true);
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [description, setDescription] = useState(
+    "This section contains the collection description."
+  );
   const [sortedData, setSortedData] = useState<ImageCollectionData[]>([]);
 
   const scrollY = new Animated.Value(0);
@@ -62,8 +76,26 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   const titleMarginLeft = getTitleMarginLeft(scrollY);
 
   useEffect(() => {
-    CollectionFeedViewController.fetchCollection(dispatch, title, uid);
-  }, []);
+    const fetchCollectionAsync = async () => {
+      try {
+        await dispatch(fetchProfileCollection(uid, title));
+      } catch (error) {
+        await console.error("Error fetching profile collection:", error);
+      }
+    };
+
+    fetchCollectionAsync();
+  }, [dispatch, uid, title]);
+
+  // Add another useEffect to sort the data when profileCollection changes
+  useEffect(() => {
+    if (profileCollection) {
+      const sorted = [...profileCollection].sort(
+        (a, b) => a.image.id - b.image.id
+      );
+      setSortedData(sorted);
+    }
+  }, [profileCollection]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -77,14 +109,8 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
     CollectionFeedViewController.viewableItemsChanged(setCurrentItemIndex)
   ).current;
 
-  useEffect(() => {
-    if (dataCollection) {
-      const sorted = [...dataCollection].sort(
-        (a, b) => a.image.id - b.image.id
-      );
-      setSortedData(sorted);
-    }
-  }, [dataCollection]);
+  const screenWidth = Dimensions.get("window").width;
+  const imageDimension = screenWidth / 4 - 8; // Subtracting for margin and any possible padding.
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,48 +126,67 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             title={title}
             headerTitleFade={headerTitleFade}
             currentItemIndex={currentItemIndex}
-            dataCollectionLength={dataCollection?.length || 0}
+            dataCollectionLength={profileCollection?.length || 0}
             sharedFontColor={sharedFontColor}
-            editButton={false}
+            isEditButton={true}
+            isEditMode={isEditMode}
+            onEditPress={() => {
+              setIsEditMode(!isEditMode);
+              if (isEditMode) {
+                //TODO handle dispatching new array / descripton change to firebase
+                dispatch(
+                  updateProfileCollectionAction({
+                    uid,
+                    title,
+                    updatedData: sortedData,
+                    updatedDescription: description,
+                  })
+                )
+                  .then(() => {
+                    console.log("SAVED");
+                  })
+                  .catch((error) => {
+                    console.log("Error:", error);
+                  });
+              }
+            }}
           />
           <CollectionFeedViewContentInfo
             headerHeight={headerHeight}
             titleOpacity={titleOpacity}
             titleMarginLeft={titleMarginLeft}
             title={title}
-            // createdAt={
-            //   sortedData[0].createdAt
-            //     ? CollectionFeedViewController.formatDate(
-            //         sortedData[0].createdAt
-            //       )
-            //     : "N/A"
-            // }
-            description={"This section contains the collection description."} // Make sure to provide the description here
+            description={description}
             avatarUri={userData?.avatar.uri || ""}
             username={userData?.username || "N/A"}
+            isEditMode={isEditMode}
+            onDescriptionChange={(newDescription) =>
+              setDescription(newDescription)
+            } // To update the description
           />
-          <FlatList
-            showsVerticalScrollIndicator={false}
-            onViewableItemsChanged={onViewableItemsChanged}
-            viewabilityConfig={{
-              itemVisiblePercentThreshold: 50, // adjust this value as needed
-            }}
-            data={sortedData}
-            renderItem={({ item }) => (
-              <CollectionFeedViewRenderItem item={item} />
-            )}
-            keyExtractor={(item, index) => index.toString()}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: false } // Make sure to set this to false
-            )}
-          />
+          {isEditMode ? (
+            <EditProfileCollectionView
+              data={sortedData}
+              scrollY={scrollY}
+              onViewableItemsChanged={onViewableItemsChanged}
+              onOrderChanged={(newOrder) => {
+                // Update the sortedData state or take some other action
+                setSortedData(newOrder);
+              }}
+            />
+          ) : (
+            <CollectionFlatListView
+              data={sortedData}
+              scrollY={scrollY}
+              onViewableItemsChanged={onViewableItemsChanged}
+            />
+          )}
           <View style={styles.footer}>
             <Text style={styles.footerText}>
               Username: {userData?.username}
             </Text>
             <Text style={styles.footerText}>
-              Created At: {sortedData[0].createdAt}
+              Created At: {sortedData[0]?.createdAt}
             </Text>
           </View>
         </View>
@@ -150,7 +195,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   );
 };
 
-export default CollectionFeedView;
+export default ProfileCollectionView;
 
 const styles = StyleSheet.create({
   container: {
