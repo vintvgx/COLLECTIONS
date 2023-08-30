@@ -9,12 +9,8 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 //screens
 import RegisterSplashScreen from "../components/RegisterSplashScreen";
-import { RegisterScreen } from "../screens/Register";
 import RegisterSetupProfileView from "../view/LoggedOut/RegisterSetupProfileView";
-import { HomeScreen } from "../screens/Home";
-import Creator from "../screens/Creator";
-import Profile from "../screens/Profile";
-import ProfileSettings from "../screens/ProfileSettings";
+import ProfileSettings from "../components/ProfileSettings/ProfileSettings";
 import PersonalDetails from "../components/ProfileSettings/PersonalDetails";
 
 //views
