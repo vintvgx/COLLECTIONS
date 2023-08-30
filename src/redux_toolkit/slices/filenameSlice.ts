@@ -1,8 +1,16 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
-import { collection, getDocs } from "firebase/firestore";
-import { auth, db } from "../../utils/firebase/f9_config";
-import { ImageCollectionData, DataState } from "../../model/types";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  auth,
+  db,
+  updateProfileCollection,
+} from "../../utils/firebase/f9_config";
+import {
+  ImageCollectionData,
+  DataState,
+  UpdateProfilePayload,
+} from "../../model/types";
 
 //initial state
 const initialState: DataState = {
@@ -12,7 +20,7 @@ const initialState: DataState = {
   collectionsData: [],
   profileCollection: [],
   isLoading: false,
-  error: null,
+  error: undefined,
   collectionCovers: [],
   feedCollectionCovers: [],
 };
@@ -24,24 +32,49 @@ const filenameSlice = createSlice({
   reducers: {
     setFilenames: (state, action: PayloadAction<string[]>) => {
       state.filenames = action.payload;
-      (state.isLoading = false), (state.error = null);
+      (state.isLoading = false), (state.error = undefined);
     },
-    setCollectionData: (state, action: PayloadAction<any[]>) => {
+    setCollectionData: (
+      state,
+      action: PayloadAction<ImageCollectionData[]>
+    ) => {
       state.collectionsData = state.collectionsData?.concat(action.payload);
-      (state.isLoading = false), (state.error = null);
+      state.isLoading = false;
+      state.error = undefined;
     },
-    setCollectionCovers: (state, action: PayloadAction<any[]>) => {
+    setCollectionCovers: (
+      state,
+      action: PayloadAction<ImageCollectionData[]>
+    ) => {
       state.collectionCovers = action.payload;
     },
-    setProfileCollection: (state, action: PayloadAction<any[]>) => {
+    setProfileCollection: (
+      state,
+      action: PayloadAction<ImageCollectionData[]>
+    ) => {
       state.profileCollection = action.payload;
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
-      (state.isLoading = action.payload), (state.error = null);
+      (state.isLoading = action.payload), (state.error = undefined);
     },
     setError: (state, action: PayloadAction<string>) => {
       (state.isLoading = false), (state.error = action.payload);
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(updateProfileCollectionAction.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(updateProfileCollectionAction.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.profileCollection = action.payload.updatedData;
+        // You can also update the description in the state if needed
+      })
+      .addCase(updateProfileCollectionAction.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.error.message;
+      });
   },
 });
 
@@ -96,7 +129,9 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
       })
     );
 
-    const collectionCovers = collectionsData.map((collection) => collection[0]);
+    const collectionCovers = collectionsData.map((collection) => {
+      return collection.find((image) => image.image.id === 0);
+    });
     dispatch(setCollectionCovers(collectionCovers));
   } catch (error) {
     console.log(error);
@@ -110,14 +145,18 @@ export const fetchProfileCollection =
     dispatch(setLoading(true));
     try {
       const collectionRef = `collections/${uid}/files/${title}/images`;
-      const querySnapshot = await getDocs(collection(db, collectionRef));
+      const descriptionRef = doc(db, `collections/${uid}/filenames/${title}`);
+
+      const collectionSnapshot = await getDocs(collection(db, collectionRef));
+      const descriptionSnapshot = await getDoc(descriptionRef);
 
       const profileCollection: ImageCollectionData[] = [];
-      querySnapshot.forEach((doc) => {
+      collectionSnapshot.forEach((doc) => {
         profileCollection.push({
           image: doc.data(),
           date: doc.data().date,
           title: doc.data().title,
+          description: descriptionSnapshot.data()?.description,
         });
       });
 
@@ -129,6 +168,28 @@ export const fetchProfileCollection =
     }
     dispatch(setLoading(false));
   };
+
+export const updateProfileCollectionAction = createAsyncThunk(
+  "filenames/updateProfileCollection",
+  async (payload: UpdateProfilePayload, thunkAPI) => {
+    console.log("DISPATCH: updateProfileCollectionAction");
+    try {
+      await updateProfileCollection(
+        payload.uid,
+        payload.title,
+        payload.updatedData,
+        payload.updatedDescription
+      );
+      return {
+        updatedData: payload.updatedData,
+        updatedDescription: payload.updatedDescription,
+      };
+    } catch (error) {
+      console.log("DISPATCH ERROR: updateProfileCollectionAction");
+      return thunkAPI.rejectWithValue("Error updating profile collection");
+    }
+  }
+);
 
 export const selectFilenames = (state: RootState) => state.filenames.filenames;
 

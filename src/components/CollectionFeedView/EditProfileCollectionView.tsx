@@ -35,6 +35,13 @@ const EditProfileCollectionView: React.FC<EditProfileCollectionViewProps> = ({
     number | null
   >(null);
 
+  const updateImageIds = (newData: ImageCollectionData[]) => {
+    return newData.map((item, index) => ({
+      ...item,
+      image: { ...item.image, id: index },
+    }));
+  };
+
   const renderCollectionImage = ({ item }: { item: ImageCollectionData }) => {
     if (item.image && item.image.width && item.image.height) {
       const calculatedHeight = calculateImageHeight(
@@ -110,13 +117,13 @@ const EditProfileCollectionView: React.FC<EditProfileCollectionViewProps> = ({
                     style={styles.controlButton}
                     onPress={() => console.log("Edit pressed")}>
                     <Feather name="edit" size={20} color="white" />
-                    <Text style={styles.controlText}>Edit</Text>
+                    {/* <Text style={styles.controlText}>Edit</Text> */}
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.controlButton}
                     onPress={() => console.log("Delete pressed")}>
-                    <Feather name="trash" size={20} color="white" />
-                    <Text style={styles.controlText}>Delete</Text>
+                    <Feather name="trash" size={20} color="red" />
+                    {/* <Text style={styles.controlText}>Delete</Text> */}
                   </TouchableOpacity>
                 </Animated.View>
               )}
@@ -149,8 +156,9 @@ const EditProfileCollectionView: React.FC<EditProfileCollectionViewProps> = ({
         renderItem={renderDraggable}
         keyExtractor={(item, index) => `draggable-${index}`}
         onDragEnd={({ data }) => {
-          setImageData(data);
-          onOrderChanged(data); // Notify parent component about reordered data
+          const updatedData = updateImageIds(data);
+          setImageData(updatedData);
+          onOrderChanged(updatedData); // Notify parent component about reordered data
         }}
       />
     </View>
@@ -182,16 +190,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginVertical: 10,
   },
-  imageShadowContainer: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-  },
+  // imageShadowContainer: {
+  //   shadowColor: "#000",
+  //   shadowOffset: { width: 0, height: 2 },
+  //   shadowOpacity: 0.25,
+  //   shadowRadius: 4,
+  //   elevation: 5,
+  //   borderRadius: 8,
+  //   borderWidth: 1,
+  //   borderColor: "#ccc",
+  // },
   draggableImage: {
     backgroundColor: "lightgray",
     borderRadius: 8,

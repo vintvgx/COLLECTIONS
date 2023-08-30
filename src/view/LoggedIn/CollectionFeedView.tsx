@@ -33,6 +33,7 @@ import {
 } from "../../utils/functions";
 import CollectionFeedViewController from "../../controller/CollectionFeedViewController";
 import CollectionFeedViewContentInfo from "../../components/CollectionFeedView/ColletionFeedViewContentInfo";
+import { ImageCollectionData } from "../../model/types";
 
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
@@ -52,6 +53,7 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
 
   const [showTitle, setShowTitle] = useState(true);
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
+  const [sortedData, setSortedData] = useState<ImageCollectionData[]>([]);
 
   const scrollY = new Animated.Value(0);
   const headerHeight = getHeaderHeight(scrollY);
@@ -75,9 +77,14 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
     CollectionFeedViewController.viewableItemsChanged(setCurrentItemIndex)
   ).current;
 
-  const sortedData = dataCollection
-    ? [...dataCollection].sort((a, b) => a.image.id - b.image.id)
-    : [];
+  useEffect(() => {
+    if (dataCollection) {
+      const sorted = [...dataCollection].sort(
+        (a, b) => a.image.id - b.image.id
+      );
+      setSortedData(sorted);
+    }
+  }, [dataCollection]);
 
   return (
     <SafeAreaView style={styles.container}>

@@ -11,7 +11,7 @@ export interface DataState {
   profileCollection: ImageCollectionData[] | undefined;
   isLoading: boolean;
   isRefreshing: boolean;
-  error: string | null;
+  error: string | undefined;
   collectionCovers: ImageCollectionData[] | undefined;
   needsReset: boolean;
   feedCollectionCovers: ImageCollectionData[] | undefined;
@@ -39,6 +39,7 @@ export interface ImageCollectionData {
   createdAt?: string;
   userData?: UserData;
   cover?: ImageData;
+  description?: string | undefined;
 }
 
 export interface SectionItem {
@@ -100,4 +101,11 @@ export interface ViewToken {
   index: number | null; // Index of the item in the data array.
   isViewable: boolean; // Whether the item is currently viewable.
   section?: any; // If using sections in FlatList, this will be the section data.
+}
+
+export interface UpdateProfilePayload {
+  uid: string;
+  title: string;
+  updatedData: ImageCollectionData[];
+  updatedDescription: string;
 }

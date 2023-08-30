@@ -18,7 +18,10 @@ import { RouteProp } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
-import { fetchProfileCollection } from "../../redux_toolkit/slices";
+import {
+  fetchProfileCollection,
+  updateProfileCollectionAction,
+} from "../../redux_toolkit/slices";
 import { AppDispatch, RootState } from "../../redux_toolkit";
 
 //components
@@ -76,10 +79,8 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
     const fetchCollectionAsync = async () => {
       try {
         await dispatch(fetchProfileCollection(uid, title));
-        // You can log the fetched profileCollection here
-        console.log("Fetched profile collection:", profileCollection);
       } catch (error) {
-        console.error("Error fetching profile collection:", error);
+        await console.error("Error fetching profile collection:", error);
       }
     };
 
@@ -131,6 +132,23 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
             isEditMode={isEditMode}
             onEditPress={() => {
               setIsEditMode(!isEditMode);
+              if (isEditMode) {
+                //TODO handle dispatching new array / descripton change to firebase
+                dispatch(
+                  updateProfileCollectionAction({
+                    uid,
+                    title,
+                    updatedData: sortedData,
+                    updatedDescription: description,
+                  })
+                )
+                  .then(() => {
+                    console.log("SAVED");
+                  })
+                  .catch((error) => {
+                    console.log("Error:", error);
+                  });
+              }
             }}
           />
           <CollectionFeedViewContentInfo
