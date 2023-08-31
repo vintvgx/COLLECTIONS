@@ -1,9 +1,17 @@
 import { createSlice, PayloadAction, createAsyncThunk } from "@reduxjs/toolkit";
 import { AppDispatch, RootState } from "../store";
-import { collection, doc, getDoc, getDocs } from "firebase/firestore";
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  writeBatch,
+} from "firebase/firestore";
 import {
   auth,
   db,
+  storage,
   updateProfileCollection,
 } from "../../utils/firebase/f9_config";
 import {
@@ -11,6 +19,7 @@ import {
   DataState,
   UpdateProfilePayload,
 } from "../../model/types";
+import { deleteObject, listAll, ref } from "firebase/storage";
 
 //initial state
 const initialState: DataState = {
@@ -54,6 +63,13 @@ const filenameSlice = createSlice({
     ) => {
       state.profileCollection = action.payload;
     },
+    removeDeletedProfileCollection: (state, action: PayloadAction<string>) => {
+      const titleToDelete = action.payload;
+      if (state.profileCollection)
+        state.profileCollection = state.profileCollection.filter(
+          (collection) => collection.title !== titleToDelete
+        );
+    },
     setLoading: (state, action: PayloadAction<boolean>) => {
       (state.isLoading = action.payload), (state.error = undefined);
     },
@@ -84,6 +100,7 @@ export const {
   setCollectionData,
   setCollectionCovers,
   setProfileCollection,
+  removeDeletedProfileCollection,
   setLoading,
   setError,
 } = filenameSlice.actions;
@@ -138,6 +155,78 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
     dispatch(setError("Error fetching filenames"));
   }
   dispatch(setLoading(false));
+};
+
+export const deleteProfileCollection =
+  (uid: string, title: string) => async (dispatch: AppDispatch) => {
+    dispatch(setLoading(true));
+    try {
+      console.log("DELETE CALLED");
+      const collectionRef = collection(
+        db,
+        `collections/${uid}/files/${title}/images`
+      );
+      const userFilenameRef = doc(db, `collections/${uid}/filenames/${title}`); // Note: Changed to 'doc'
+      const feedRef = doc(db, `feed/allUsers/filenames/${title}`); // Note: Changed to 'doc'
+      const feedFilenameRef = collection(
+        db,
+        `feed/allUsers/files/${title}/images`
+      );
+
+      // Delete each file in storage
+      tryDeleteStorageFiles(uid, title);
+
+      // Delete all documents within the collection
+      const querySnapshot = await getDocs(collectionRef);
+      const batch = writeBatch(db);
+      console.log("🚀 ~ file: filenameSlice.ts:174 ~ batch:", batch);
+      querySnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      await batch.commit();
+
+      // Delete other references
+      await deleteDoc(userFilenameRef);
+      await deleteDoc(feedRef);
+
+      const feedSnapshot = await getDocs(feedFilenameRef);
+      const feedBatch = writeBatch(db);
+      console.log("🚀 ~ file: filenameSlice.ts:186 ~ feedBatch:", feedBatch);
+      feedSnapshot.docs.forEach((doc) => {
+        feedBatch.delete(doc.ref);
+      });
+      await feedBatch.commit();
+
+      dispatch(removeDeletedProfileCollection(title));
+      console.log(title + ": DELETED!");
+    } catch (error) {
+      console.log(error);
+      dispatch(setError("Error deleting profile collection"));
+    }
+    dispatch(setLoading(false));
+  };
+
+const tryDeleteStorageFiles = async (uid: string, title: string) => {
+  try {
+    const storageRef = ref(storage, `images/${uid}/${title}`);
+    const listResults = await listAll(storageRef);
+    console.log(
+      "🚀 ~ file: filenameSlice.ts:213 ~ tryDeleteStorageFiles ~ listResults:",
+      listResults
+    );
+    const deleteFiles = listResults.items.map((fileRef) => {
+      console.log(
+        "🚀 ~ file: filenameSlice.ts:215 ~ deleteFiles ~ fileRef:",
+        fileRef
+      );
+      deleteObject(fileRef);
+    });
+    await Promise.all(deleteFiles);
+
+    console.log("Successfully deleted all files.");
+  } catch (error) {
+    console.log("Failed to delete files:", JSON.stringify(error, null, 2));
+  }
 };
 
 export const fetchProfileCollection =
