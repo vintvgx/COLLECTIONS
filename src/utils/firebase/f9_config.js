@@ -168,14 +168,26 @@ export const updateProfileCollection = async (
   uid,
   title,
   updatedImages, // Assume this is an array of updated images with new ids
-  updatedDescription
+  updatedEditorial
 ) => {
   try {
     // First, update the description for the collection
-    const collectionRef = doc(db, `collections/${uid}/filenames`, title);
+    const collectionEditorialRef = doc(
+      db,
+      `collections/${uid}/filenames`,
+      title
+    );
+    const feedEditorialRef = doc(db, "feed/allUsers/filenames", title);
 
-    await updateDoc(collectionRef, {
-      description: updatedDescription,
+    await updateDoc(collectionEditorialRef, {
+      editorial: updatedEditorial,
+    }).catch((error) => {
+      console.error("Error updating collection description:", error);
+      throw error;
+    });
+
+    await updateDoc(feedEditorialRef, {
+      editorial: updatedEditorial,
     }).catch((error) => {
       console.error("Error updating collection description:", error);
       throw error;
@@ -183,18 +195,28 @@ export const updateProfileCollection = async (
 
     // Loop through each updated image and update only the id field in Firestore
     for (const updatedImage of updatedImages) {
-      const img_firestore_ref = doc(
+      // user profile reference
+      const profileCollectionRef = doc(
         db,
-        "collections",
-        uid,
-        "files",
-        title,
-        "images",
-        updatedImage.image.fileName
+        `collections/${uid}/files/${title}/images/${updatedImage.image.fileName}`
+      );
+
+      // feed reference
+      const feedCollectionRef = doc(
+        db,
+        `feed/allUsers/files/${title}/images/${updatedImage.image.fileName}`
       );
 
       // Update only the 'id' field for this Firestore document
-      await updateDoc(img_firestore_ref, { id: updatedImage.image.id }).catch(
+      await updateDoc(profileCollectionRef, {
+        id: updatedImage.image.id,
+      }).catch((error) => {
+        console.error("Error updating image id:", updatedImage.fileName, error);
+        throw error;
+      });
+
+      // Update only the 'id' field for the specified doc in
+      await updateDoc(feedCollectionRef, { id: updatedImage.image.id }).catch(
         (error) => {
           console.error(
             "Error updating image id:",

@@ -179,23 +179,29 @@ export const HomeStack = () => {
           } else if (route.name === "Profile") {
             iconName = focused ? "person" : "person-outline";
           }
+
           return (
             <Ionicons
               name={iconName}
               size={size}
               color={getIconColor(focused)}
+              style={{ textAlign: "center", marginBottom: -20 }} // Center-align the icon
             />
           );
         },
         tabBarStyle: {
-          backgroundColor: darkMode ? "#d3d3d3" : "#fff", // Change as per your requirement
+          backgroundColor: darkMode ? "#222" : "rgba(255, 255, 255, 0.8)", // Semi-transparent white background when not in dark mode
           borderTopWidth: 0,
-          elevation: 0,
+          elevation: 10,
           shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 2,
-          paddingVertical: 10,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.25,
+          shadowRadius: 3,
+          paddingVertical: 20,
+          position: "absolute",
+          borderRadius: 20,
+          alignItems: "center", // Additional line to center-align everything
+          zIndex: 0,
         },
         tabBarVisible: getTabBarVisibility(route),
         tabBarLabel: "",

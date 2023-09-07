@@ -6,7 +6,7 @@ import { addCollectionData } from "../redux_toolkit/slices/addCollectionSlice";
 class CreateController {
   static async ADD_COLLECTION() {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: false,
       quality: 1,
       allowsMultipleSelection: true,
@@ -20,7 +20,7 @@ class CreateController {
 
   static async TAKE_PHOTO() {
     const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       quality: 1,
       allowsMultipleSelection: true,
@@ -35,10 +35,12 @@ class CreateController {
   static async HANDLE_CONFIRM_BUTTON_PRESSED(
     images: ImageData[],
     collectionTitle: string,
+    editorial: string,
     setCollectionTitle: React.Dispatch<React.SetStateAction<string>>,
     setImageCount: React.Dispatch<React.SetStateAction<number>>,
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>,
-    currentTimestamp: string, // Adjust the type as necessary
+    setEditorial: React.Dispatch<React.SetStateAction<string>>,
+    currentTimestamp: string,
     dispatch: Function
   ) {
     if (images.length === 0) {
@@ -57,6 +59,7 @@ class CreateController {
         })),
         title: collectionTitle,
         createdAt: currentTimestamp,
+        editorial: editorial,
       };
 
       if (collectionTitle == "") {
@@ -66,6 +69,7 @@ class CreateController {
         // @ts-ignore
         await dispatch(addCollectionData(dataState));
         setCollectionTitle("");
+        setEditorial("");
         setImageCount(0);
         setShowModal(false);
       }

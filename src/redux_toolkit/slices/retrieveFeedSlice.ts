@@ -10,6 +10,8 @@ import {
   startAfter,
   QueryDocumentSnapshot,
   getDoc,
+  DocumentData,
+  Query,
 } from "firebase/firestore";
 import {
   DataState,
@@ -30,7 +32,7 @@ const initialState: DataState = {
   collectionsData: [],
   isLoading: false,
   isRefreshing: false,
-  error: null,
+  error: undefined,
   collectionCovers: [],
   needsReset: false,
   feedCollectionCovers: [],
@@ -45,7 +47,12 @@ const feedSlice = createSlice({
     setFeedData: (state, action: PayloadAction<any[]>) => {
       state.feedData = state.feedData?.concat(action.payload);
       state.isLoading = false;
-      state.error = null;
+      state.error = undefined;
+    },
+    resetState: (state) => {
+      state.feedData = [];
+      state.feedCollectionCovers = [];
+      state.lastDoc = null;
     },
     setFeedCollectionCovers: (state, action: PayloadAction<any[]>) => {
       state.feedCollectionCovers = state.feedCollectionCovers?.concat(
@@ -59,15 +66,15 @@ const feedSlice = createSlice({
       state.lastDoc = null;
     },
     addImageToCollection: (state, action: PayloadAction<any>) => {
-      state.collectionsData.push(action.payload);
+      state.collectionsData?.push(action.payload);
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;
-      state.error = null;
+      state.error = undefined;
     },
     setIsRefreshing: (state, action: PayloadAction<boolean>) => {
       state.isRefreshing = action.payload;
-      state.error = null;
+      state.error = undefined;
     },
     setError: (state, action: PayloadAction<string>) => {
       state.isLoading = false;
@@ -91,6 +98,7 @@ const feedSlice = createSlice({
 
 export const {
   setFeedData,
+  resetState,
   setFeedCollectionCovers,
   setLastDoc,
   resetLastDoc,
@@ -121,7 +129,7 @@ export const fetchFeedData =
     let refreshing = state.feed.isRefreshing;
 
     try {
-      let feedFilenamesQuery;
+      let feedFilenamesQuery: Query<DocumentData> | undefined = undefined;
       // console.log("LAST DOC: ", lastDoc);
 
       // If this is the first batch, we don't need to use startAfter
@@ -225,9 +233,9 @@ export const fetchFeedData =
       );
       dispatch(setFeedCollectionCovers(feedCollectionCovers));
 
-      feedCollectionCovers.forEach((doc) => {
-        console.log("FEEDCOLLECTIONCOVERS:", doc);
-      });
+      // feedCollectionCovers.forEach((doc) => {
+      //   console.log("FEEDCOLLECTIONCOVERS:", doc);
+      // });
 
       // Cache the fetched data for future use
       cacheData("cached_feed_data", feedCollectionData);
@@ -244,27 +252,36 @@ export const fetchFeedData =
 export const fetchCollectionData = createAsyncThunk(
   "feed/fetchCollectionData",
   async (params: { title: string; uid: string }, thunkAPI) => {
-    // Here, use params.title and params.uid to create the necessary query to fetch the collection from Firebase
-    // Example:
-    const dispatch = thunkAPI.dispatch;
     try {
-      console.log;
-      const pathRef = `feed/allUsers/files/${params.title}/images`;
-      const collectionRef = collection(db, pathRef);
-      const collectionSnapshot = await getDocs(collectionRef);
+      const dispatch = thunkAPI.dispatch;
+
+      const collectionRef = `feed/allUsers/files/${params.title}/images`;
+      const descriptionDoc = doc(db, "feed/allUsers/filenames", params.title);
+
+      const collectionSnapshot = await getDocs(collection(db, collectionRef));
+      const descriptionSnapshot = await getDoc(descriptionDoc);
+
+      console.log("Description Snapshot Object:", descriptionSnapshot);
+
+      if (descriptionSnapshot.exists()) {
+        console.log("Description Data:", descriptionSnapshot.data());
+      } else {
+        console.warn(`Document with title '${params.title}' does not exist.`);
+      }
+
       const userData = await dispatch(fetchFeedUserData(params.uid)).unwrap();
-      console.log(`PARAM TITLE: ${params.title}`);
 
       const dataCollection: ImageCollectionData[] = [];
 
-      collectionSnapshot.docs.map(async (doc) => {
+      for (const doc of collectionSnapshot.docs) {
         dataCollection.push({
           image: doc.data(),
           title: doc.data().title,
           createdAt: doc.data().createdAt,
           userData: userData,
+          editorial: descriptionSnapshot.data()?.editorial,
         });
-      });
+      }
 
       console.log(dataCollection);
 

@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, Image } from "react-native";
 import React from "react";
 import { ImageCollectionData } from "../../model/types";
 import { calculateImageHeight } from "../../utils/image";
+import MediaComponent from "../MediaComponent";
 
 interface RenderItemProps {
   item: ImageCollectionData;
@@ -15,10 +16,13 @@ const CollectionFeedViewRenderItem: React.FC<RenderItemProps> = ({ item }) => {
     );
     return (
       <View style={styles.imageContainer}>
-        <Image
-          resizeMode="cover"
-          source={item.image.uri ? { uri: item.image.uri } : null}
+        <MediaComponent
+          uri={item?.image?.uri}
+          type={item.image.type}
           style={[styles.imageStyles, { height: calculatedHeight }]}
+          controls={true}
+          play={true}
+          muted={true}
         />
       </View>
     );

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, View, Image } from "react-native";
 import React from "react";
 import { useAppSelector } from "../redux_toolkit";
+import MediaComponent from "./MediaComponent";
 
 interface ProfileImageCardProps {
   item: any;
@@ -24,13 +25,16 @@ const ProfileImageCard: React.FC<ProfileImageCardProps> = ({ item }) => {
             position: "relative",
           },
         ]}>
-        <Image
-          source={{ uri: item.image.uri }}
+        <MediaComponent
+          uri={item?.image?.uri}
+          type={item.image.type}
           style={{
             height: item.randomBool ? 150 : 280,
             alignSelf: "stretch",
           }}
           resizeMode="cover"
+          controls={false}
+          muted={true}
         />
         <View
           style={{

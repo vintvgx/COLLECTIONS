@@ -15,8 +15,8 @@ type CollectionFeedViewHeaderProps = {
   currentItemIndex: number;
   dataCollectionLength: number;
   sharedFontColor: string;
-  isEditButton: boolean;
-  isEditMode: boolean;
+  isEditButton?: boolean;
+  isEditMode?: boolean;
   onEditPress?: () => void;
   onDeletePress?: () => void;
 };

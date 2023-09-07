@@ -7,6 +7,7 @@ interface ButtonProps {
   height: number;
   title: string;
   isNoBg?: boolean;
+  disabled?: boolean;
 }
 
 const ButtonWithTitle: React.FC<ButtonProps> = ({
@@ -15,7 +16,11 @@ const ButtonWithTitle: React.FC<ButtonProps> = ({
   height,
   title,
   isNoBg = false,
+  disabled,
 }) => {
+  const backgroundColor = disabled ? "#ccc" : isNoBg ? "transparent" : "#000";
+  const textColor = disabled ? "#888" : isNoBg ? "#3980D9" : "#FFF";
+
   return (
     <TouchableOpacity
       style={[
@@ -23,15 +28,17 @@ const ButtonWithTitle: React.FC<ButtonProps> = ({
         {
           width,
           height,
-          backgroundColor: isNoBg ? "transparent" : "#000",
+          backgroundColor: backgroundColor,
         },
+        disabled && styles.btnDisabled,
       ]}
-      onPress={() => onTap()}>
+      onPress={() => onTap()}
+      disabled={disabled}>
       <Text
         style={[
           styles.btnText,
           {
-            color: isNoBg ? "#3980D9" : "#FFF",
+            color: textColor,
           },
         ]}>
         {title}
@@ -51,6 +58,10 @@ const styles = StyleSheet.create({
   },
   btnText: {
     fontSize: 16,
+  },
+  btnDisabled: {
+    opacity: 0.6,
+    elevation: 0,
   },
 });
 

@@ -30,6 +30,7 @@ import {
   getTitleOpacity,
   getHeaderTitleFade,
   getTitleMarginLeft,
+  logFeedData,
 } from "../../utils/functions";
 import CollectionFeedViewController from "../../controller/CollectionFeedViewController";
 import CollectionFeedViewContentInfo from "../../components/CollectionFeedView/ColletionFeedViewContentInfo";
@@ -46,14 +47,17 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   const dispatch: AppDispatch = useDispatch();
 
   const { title, uid } = route.params;
-  const dataCollection = useSelector(
-    (state: RootState) => state.feed.collectionsData
+  const { collectionsData, isLoading } = useSelector(
+    (state: RootState) => state.feed
   );
   const userData = useSelector((state: RootState) => state.feed.userData);
 
   const [showTitle, setShowTitle] = useState(true);
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
   const [sortedData, setSortedData] = useState<ImageCollectionData[]>([]);
+  const [editorial, setEditorial] = useState(
+    "This section contains the collection description."
+  );
 
   const scrollY = new Animated.Value(0);
   const headerHeight = getHeaderHeight(scrollY);
@@ -78,13 +82,19 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
   ).current;
 
   useEffect(() => {
-    if (dataCollection) {
-      const sorted = [...dataCollection].sort(
+    if (!isLoading && collectionsData) {
+      const sorted = [...collectionsData].sort(
         (a, b) => a.image.id - b.image.id
       );
       setSortedData(sorted);
+
+      if (sorted && sorted.length > 0 && sorted[0]?.editorial) {
+        setEditorial(sorted[0].editorial);
+      } else {
+        return;
+      }
     }
-  }, [dataCollection]);
+  }, [isLoading, collectionsData]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -100,9 +110,8 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             title={title}
             headerTitleFade={headerTitleFade}
             currentItemIndex={currentItemIndex}
-            dataCollectionLength={dataCollection?.length || 0}
+            dataCollectionLength={collectionsData?.length || 0}
             sharedFontColor={sharedFontColor}
-            editButton={false}
           />
           <CollectionFeedViewContentInfo
             headerHeight={headerHeight}
@@ -116,8 +125,8 @@ const CollectionFeedView: React.FC<CollectionFeedViewProps> = ({ route }) => {
             //       )
             //     : "N/A"
             // }
-            description={"This section contains the collection description."} // Make sure to provide the description here
-            avatarUri={userData?.avatar.uri || ""}
+            description={editorial}
+            avatarUri={userData?.avatar.uri}
             username={userData?.username || "N/A"}
           />
           <FlatList

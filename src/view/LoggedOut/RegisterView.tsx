@@ -11,10 +11,12 @@ import { useNavigation } from "@react-navigation/native";
 import { TextField } from "../../components/TextField";
 import { ButtonWithTitle } from "../../components/ButtonWithTitle";
 import { useDispatch } from "react-redux";
-import { OnUserLogin } from "../../redux_toolkit/slices/authSlice";
+import { clearError, OnUserLogin } from "../../redux_toolkit/slices/authSlice";
 import { OnUserSignup } from "../../redux_toolkit/slices/authSlice";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParams } from "../../navigation/Navigation";
+import { RootState, useAppSelector } from "../../redux_toolkit";
+import { useSelector } from "react-redux";
 
 interface LoginProps {
   OnUserLogin: Function;
@@ -27,6 +29,8 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
   const [password, setPassword] = useState("");
   const [title, setTitle] = useState("Login");
   const [isSignup, setIsSignup] = useState(false);
+
+  const { error, isLoading } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
 
   const navigation =
@@ -40,6 +44,7 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
       } else {
         // OnUserLogin(email, password);
         await dispatch(OnUserLogin({ email: email, password: password }));
+        console.log(error);
       }
     } catch (error) {
       console.log("ERROR", error);
@@ -51,6 +56,10 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
     setTitle(!isSignup ? "Signup" : "Login");
   };
 
+  const clearAuthError = () => {
+    dispatch(clearError());
+  };
+
   return (
     <View style={styles.container}>
       {/* App Title */}
@@ -59,11 +68,13 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
       <View style={styles.body}>
         <TextField
           placeholder="Email ID"
-          onTextChange={setEmail}
+          onTextChange={(text: React.SetStateAction<string>) => {
+            setEmail(text);
+            clearAuthError();
+          }}
           isSecure={false}
           // value="kareems95@gmail.com"
         />
-
         {isSignup && (
           <TextField
             placeholder="Phone Number"
@@ -73,17 +84,21 @@ const RegisterView: React.FC<LoginProps> = ({ OnUserLogin, OnUserSignup }) => {
         )}
         <TextField
           placeholder="Password"
-          onTextChange={setPassword}
+          onTextChange={(text: React.SetStateAction<string>) => {
+            setPassword(text);
+            clearAuthError();
+          }}
           isSecure={true}
           // value="Vent1234"
         />
-
         <ButtonWithTitle
           title={title}
           height={50}
           width={325}
           onTap={onTapAuthenticate}
+          disabled={isLoading}
         />
+        {error && <Text style={styles.errorText}>{error}</Text>}
 
         <TouchableOpacity onPress={onTapOptions} style={styles.optionsButton}>
           <Text style={styles.optionsText}>
@@ -135,6 +150,11 @@ const styles = StyleSheet.create({
   footerText: {
     color: "#ccc", // Soft light gray
     fontSize: 12,
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 10,
   },
 });
 

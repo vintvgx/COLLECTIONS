@@ -61,8 +61,8 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const { title, uid } = route.params;
-  const profileCollection = useSelector(
-    (state: RootState) => state.filenames.profileCollection
+  const { profileCollection, isLoading } = useSelector(
+    (state: RootState) => state.filenames
   );
   const userData = useSelector((state: RootState) => state.feed.userData);
 
@@ -70,8 +70,8 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
   const [isEditMode, setIsEditMode] = useState(false);
   const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
-  const [description, setDescription] = useState(
-    "This section contains the collection description."
+  const [editorial, setEditorial] = useState(
+    "This section contains the collection editorial."
   );
   const [sortedData, setSortedData] = useState<ImageCollectionData[]>([]);
 
@@ -95,13 +95,19 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
 
   // Add another useEffect to sort the data when profileCollection changes
   useEffect(() => {
-    if (profileCollection) {
+    if (!isLoading && profileCollection) {
+      // Check isLoading from Redux state
+      // Your existing logic
       const sorted = [...profileCollection].sort(
         (a, b) => a.image.id - b.image.id
       );
       setSortedData(sorted);
+
+      if (sorted?.[0]?.editorial) {
+        setEditorial(sorted[0].editorial);
+      }
     }
-  }, [profileCollection]);
+  }, [isLoading, profileCollection]); // Add isLoading to dependency array
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -145,7 +151,7 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
                     uid,
                     title,
                     updatedData: sortedData,
-                    updatedDescription: description,
+                    updatedEditorial: editorial,
                   })
                 )
                   .then(() => {
@@ -174,12 +180,12 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
             titleOpacity={titleOpacity}
             titleMarginLeft={titleMarginLeft}
             title={title}
-            description={description}
+            description={editorial}
             avatarUri={userData?.avatar.uri || ""}
             username={userData?.username || "N/A"}
             isEditMode={isEditMode}
             onDescriptionChange={(newDescription) =>
-              setDescription(newDescription)
+              setEditorial(newDescription)
             } // To update the description
           />
           {isEditMode ? (
