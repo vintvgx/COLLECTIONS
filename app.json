@@ -2,13 +2,12 @@
   "name": "COLLECTIONS",
   "displayName": "COLLECTIONS",
   "expo": {
-    "name": "collections1.0.0.2",
-    "slug": "collections1.0.0.2",
-    "version": "1.0.0",
+    "name": "collections-ios",
+    "slug": "collections-ios",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "permissions": ["CAMERA_ROLL"],
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -18,16 +17,28 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "collections.ios.client"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "collections.android.client",
+      "hermes": true 
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "90cce0df-b3d6-4692-86c2-d333a33d7942"
+      }
+    },
+    "runtimeVersion": "1.0.0",
+    "updates": {
+      "url": "https://u.expo.dev/90cce0df-b3d6-4692-86c2-d333a33d7942"
     }
   }
 }
