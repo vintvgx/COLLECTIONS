@@ -10,7 +10,7 @@ const RegisterSplashScreen = () => {
 
   useEffect(() => {
     setTimeout(() => {
-      navigation.navigate("Register");
+      navigation.navigate("RegisterView");
     }, 1500);
   }, [navigation]);
 

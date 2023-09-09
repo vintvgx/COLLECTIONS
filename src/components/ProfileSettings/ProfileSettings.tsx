@@ -14,13 +14,13 @@ import {
 import React, { useContext, useEffect, useState } from "react";
 import { EventRegister } from "react-native-event-listeners";
 
-import { UserData, ProfileUser } from "../model/types";
-import { PROFILE_SETTINGS_SECTIONS } from "../constants/ProfileSettings_Section";
+import { UserData, ProfileUser } from "../../model/types";
+import { PROFILE_SETTINGS_SECTIONS } from "../../constants/ProfileSettings_Section";
 import {
   saveUserData,
   fetchUserData,
   setDarkMode,
-} from "../redux_toolkit/slices/user_data";
+} from "../../redux_toolkit/slices/user_data";
 
 import {
   Ionicons,
@@ -28,10 +28,10 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { Section, SectionItem } from "../model/types";
-import { useAppSelector } from "../redux_toolkit";
+import { Section, SectionItem } from "../../model/types";
+import { useAppSelector } from "../../redux_toolkit";
 import { useNavigation } from "@react-navigation/native";
-import { useTheme } from "../theme/themeContext";
+import { useTheme } from "../../theme/themeContext";
 
 const ProfileSettings: React.FC = ({}) => {
   const dispatch = useDispatch();

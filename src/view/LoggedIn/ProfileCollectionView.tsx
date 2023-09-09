@@ -14,11 +14,12 @@ import {
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import React, { useEffect, useRef, useState } from "react";
-import { RouteProp } from "@react-navigation/native";
+import { RouteProp, useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 
 import {
+  deleteProfileCollection,
   fetchProfileCollection,
   updateProfileCollectionAction,
 } from "../../redux_toolkit/slices";
@@ -28,6 +29,7 @@ import { AppDispatch, RootState } from "../../redux_toolkit";
 import CollectionFeedViewHeader from "../../components/CollectionFeedView/CollectionFeedViewHeader";
 import CollectionFeedViewSplashScreen from "../../components/CollectionFeedView/CollectionFeedViewSplashScreen";
 import CollectionFeedViewRenderItem from "../../components/CollectionFeedView/CollectionFeedViewRenderItem";
+import DeleteConfirmationModal from "../../components/DeleteConfirmationModal";
 
 //functions
 import {
@@ -42,6 +44,7 @@ import { RootStackParams } from "../../navigation/Navigation";
 import { ImageCollectionData } from "../../model/types";
 import EditProfileCollectionView from "../../components/CollectionFeedView/EditProfileCollectionView";
 import CollectionFlatListView from "../../components/CollectionFeedView/CollectionFlatListView";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 const sharedBackgroundColor = "white";
 const sharedFontColor = "black";
@@ -54,6 +57,8 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
   route,
 }) => {
   const dispatch: AppDispatch = useDispatch();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const { title, uid } = route.params;
   const profileCollection = useSelector(
@@ -64,6 +69,7 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
   const [showTitle, setShowTitle] = useState(true);
   const [currentItemIndex, setCurrentItemIndex] = useState(1);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
   const [description, setDescription] = useState(
     "This section contains the collection description."
   );
@@ -149,6 +155,18 @@ const ProfileCollectionView: React.FC<ProfileCollectionFeedViewProps> = ({
                     console.log("Error:", error);
                   });
               }
+            }}
+            onDeletePress={() => setDeleteModalVisible(true)}
+          />
+          <DeleteConfirmationModal
+            isVisible={isDeleteModalVisible}
+            onDelete={async () => {
+              await dispatch(deleteProfileCollection(uid, title));
+              setDeleteModalVisible(false);
+              navigation.goBack();
+            }}
+            onCancel={() => {
+              setDeleteModalVisible(false);
             }}
           />
           <CollectionFeedViewContentInfo

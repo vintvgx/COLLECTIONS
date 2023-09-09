@@ -18,6 +18,7 @@ type CollectionFeedViewHeaderProps = {
   isEditButton: boolean;
   isEditMode: boolean;
   onEditPress?: () => void;
+  onDeletePress?: () => void;
 };
 
 const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
@@ -29,11 +30,13 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
   isEditButton,
   isEditMode,
   onEditPress,
+  onDeletePress,
 }) => {
   const navigation = useNavigation();
 
   return (
     <View style={styles.header}>
+      {/* Left Icons */}
       <View style={styles.leftIcons}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={{ color: sharedFontColor }}>Back</Text>
@@ -47,6 +50,7 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
           {`${currentItemIndex}/${dataCollectionLength}`}
         </Animated.Text>
       </View>
+      {/* Title */}
       <Animated.Text
         style={[
           styles.header_title_text,
@@ -54,21 +58,33 @@ const CollectionFeedViewHeader: React.FC<CollectionFeedViewHeaderProps> = ({
         ]}>
         {title}
       </Animated.Text>
+      {/* Right Icons */}
       <View
         style={[
           styles.rightIcons,
-          isEditButton ? {} : { justifyContent: "flex-end" },
+          isEditMode ? styles.rightIconsEditMode : {},
         ]}>
-        {isEditButton && (
-          <TouchableOpacity onPress={onEditPress}>
-            <Text style={{ color: sharedFontColor }}>
-              {isEditMode ? "Save" : "Edit"}
-            </Text>
-          </TouchableOpacity>
+        {isEditMode ? (
+          <>
+            <TouchableOpacity onPress={onDeletePress}>
+              <Text style={styles.deleteButton}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onEditPress}>
+              <Text style={{ color: sharedFontColor }}>Save</Text>
+            </TouchableOpacity>
+          </>
+        ) : (
+          isEditButton && (
+            <>
+              <TouchableOpacity onPress={onEditPress}>
+                <Text style={{ color: sharedFontColor }}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => navigation.goBack()}>
+                <Feather name="menu" size={20} color="black" />
+              </TouchableOpacity>
+            </>
+          )
         )}
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="menu" size={20} color="black"></Feather>
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -91,7 +107,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    width: 65,
+    minWidth: 55,
+  },
+  rightIconsEditMode: {
+    minWidth: 90,
   },
   header_title_text: {
     fontSize: 15,
@@ -101,6 +120,12 @@ const styles = StyleSheet.create({
     right: 0,
     textAlign: "center",
     zIndex: 1,
+  },
+  deleteButton: {
+    color: "red",
+    backgroundColor: "white",
+    paddingHorizontal: 5,
+    paddingVertical: 2,
   },
 });
 

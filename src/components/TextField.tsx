@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-} from "react-native";
+import { View, TextInput, StyleSheet, TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons"; // You can import icons from a suitable library
 
 interface TextFieldProps {
   placeholder?: string;
@@ -26,6 +21,10 @@ export const TextField: React.FC<TextFieldProps> = ({
     setIsPassword(isSecure);
   }, []);
 
+  const clearText = () => {
+    onTextChange("");
+  };
+
   return (
     <View style={styles.container}>
       <TextInput
@@ -37,6 +36,11 @@ export const TextField: React.FC<TextFieldProps> = ({
         value={value}
         autoCorrect={false}
       />
+      {value && (
+        <TouchableOpacity onPress={clearText} style={styles.clearButton}>
+          <Ionicons name="close-circle-outline" size={20} color="#888" />
+        </TouchableOpacity>
+      )}
     </View>
   );
 };
@@ -46,7 +50,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     height: 50,
     borderRadius: 30,
-    backgroundColor: "#DBDBDB",
+    backgroundColor: "#f5f5f5",
     justifyContent: "center",
     alignItems: "center",
     margin: 10,
@@ -55,11 +59,24 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 10,
     width: 325,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   textField: {
     flex: 1,
     height: 50,
-    fontSize: 20,
+    fontSize: 16, // Slightly smaller font size
     color: "#000",
+  },
+  clearButton: {
+    paddingHorizontal: 8,
   },
 });
