@@ -36,7 +36,9 @@ const MainStack = createNativeStackNavigator<MainStackParams>();
 export type RootStackParams = {
   RegisterSplashScreen: any;
   RegisterView: LoginProps;
-  RegisterSetupProfileView: any;
+  RegisterSetupProfileView: {
+    email: string;
+  };
   Home: any;
   CollectionFeedView: {
     title: string;

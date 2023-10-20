@@ -91,18 +91,16 @@ export const OnUserSignup = createAsyncThunk<
   }
 });
 
+// OnUserLogin function
 export const OnUserLogin = createAsyncThunk<
   string,
   { email: string; password: string }
 >("auth/onUserLogin", async ({ email, password }, thunkAPI) => {
   try {
     thunkAPI.dispatch(authLoading(true));
-    console.log("LOGIN" + email + password + thunkAPI);
 
     try {
       const user = await signInWithEmailAndPassword(auth, email, password);
-
-      console.log("user");
       // Save user data to AsyncStorage
       await AsyncStorage.setItem("user", JSON.stringify(user));
       await AsyncStorage.setItem("isLoggedIn", "true");
@@ -113,9 +111,14 @@ export const OnUserLogin = createAsyncThunk<
       return "Login Success";
     } catch (error) {
       console.log(error);
-      const errorMessage = getFirebaseErrorMessage(error?.code);
+      const errorCode = error?.code;
+      const errorMessage = getFirebaseErrorMessage(errorCode);
       thunkAPI.dispatch(authError(errorMessage));
-      return thunkAPI.rejectWithValue("Login Error");
+      if (errorCode === "auth/user-not-found") {
+        return thunkAPI.rejectWithValue("User Not Found");
+      } else {
+        return thunkAPI.rejectWithValue("Login Error");
+      }
     }
   } catch (error) {
     thunkAPI.dispatch(setError("Login Error"));

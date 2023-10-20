@@ -4,7 +4,7 @@
   "expo": {
     "name": "collections-ios",
     "slug": "collections-ios",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -36,7 +36,7 @@
         "projectId": "90cce0df-b3d6-4692-86c2-d333a33d7942"
       }
     },
-    "runtimeVersion": "1.0.0",
+    "runtimeVersion": "1.0.2",
     "updates": {
       "url": "https://u.expo.dev/90cce0df-b3d6-4692-86c2-d333a33d7942"
     }

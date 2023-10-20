@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
   btn: {
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 30,
+    borderRadius: 10,
     alignSelf: "center",
-    marginTop: 20,
+    marginTop: 10,
     elevation: 3,
   },
   btnText: {
