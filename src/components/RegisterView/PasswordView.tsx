@@ -8,6 +8,7 @@ interface PasswordViewProps {
   confirmPassword: string;
   setPassword: React.Dispatch<React.SetStateAction<string>>;
   setConfirmPassword: React.Dispatch<React.SetStateAction<string>>;
+  onValidPassword: (isValid: boolean) => void;
 }
 
 const PasswordView: React.FC<PasswordViewProps> = ({
@@ -16,26 +17,41 @@ const PasswordView: React.FC<PasswordViewProps> = ({
   confirmPassword,
   setPassword,
   setConfirmPassword,
+  onValidPassword,
 }) => {
-  const [isValid, setIsValid] = useState(true);
-  const [shouldDisplayError, setShouldDisplayError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const isPasswordValid = () => {
-    const capitalLetter = /[A-Z]/;
-    const number = /[0-9]/;
-    return (
-      password === confirmPassword &&
-      capitalLetter.test(password) &&
-      number.test(password)
-    );
-  };
+  const checkCapitalLetter = (str: string) => /[A-Z]/.test(str);
+  const checkNumber = (str: string) => /[0-9]/.test(str);
 
   const validatePassword = () => {
-    const valid = isPasswordValid();
-    setIsValid(valid);
-    if (confirmPassword !== "") {
-      setShouldDisplayError(!valid);
+    if (!confirmPassword) {
+      // Return early if confirmPassword is empty
+      return;
     }
+
+    let errors = [];
+    if (password !== confirmPassword) {
+      errors.push("Passwords do not match");
+    }
+    if (!checkCapitalLetter(password)) {
+      errors.push("Password missing capital letter");
+    }
+    if (!checkNumber(password)) {
+      errors.push("Password missing a number");
+    }
+
+    if (errors.length === 0) {
+      setErrorMessage("");
+    } else if (errors.length === 1) {
+      setErrorMessage(errors[0]);
+    } else {
+      setErrorMessage(
+        "Passwords must match, contain a capital letter, and a number"
+      );
+    }
+
+    onValidPassword(errors.length === 0);
   };
 
   useEffect(() => {
@@ -50,7 +66,6 @@ const PasswordView: React.FC<PasswordViewProps> = ({
         isSecure={true}
         onTextChange={(text: React.SetStateAction<string>) => {
           setPassword(text);
-          // setShouldDisplayError(false);
         }}
       />
 
@@ -59,15 +74,10 @@ const PasswordView: React.FC<PasswordViewProps> = ({
         isSecure={true}
         onTextChange={(text: React.SetStateAction<string>) => {
           setConfirmPassword(text);
-          // setShouldDisplayError(false);
         }}
       />
 
-      {!isValid && shouldDisplayError && (
-        <Text style={styles.errorMessage}>
-          Passwords must match, contain a capital letter, and a number
-        </Text>
-      )}
+      {errorMessage && <Text style={styles.errorMessage}>{errorMessage}</Text>}
     </View>
   );
 };
@@ -80,14 +90,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
   },
   label: {
-    fontWeight: "bold",
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: "300",
+    marginBottom: 20,
     alignSelf: "center",
-    marginBottom: 30,
   },
   errorMessage: {
     color: "red",
     marginBottom: 10,
     alignSelf: "center",
+    fontSize: 11,
   },
 });

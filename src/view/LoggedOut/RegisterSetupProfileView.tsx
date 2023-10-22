@@ -21,6 +21,7 @@ import { useDispatch } from "react-redux";
 import { saveUserData } from "../../redux_toolkit/slices/user_data";
 import { AppDispatch } from "../../redux_toolkit";
 import PasswordView from "../../components/RegisterView/PasswordView";
+import SetUpProfileView from "../../components/RegisterView/SetupProfileView";
 
 type RegisterSetupProfileViewProps = {
   route: RouteProp<RootStackParams, "RegisterSetupProfileView">;
@@ -40,9 +41,11 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
   const [avatarUri, setAvatarUri] = useState<string | undefined>();
   const [avatar, setAvatar] = useState<ImageData | undefined>(undefined);
   const [nextButtonEnabled, setNextButtonEnabled] = useState(false);
+  const [confirmButtonEnabled, setConfirmButtonEnabled] = useState(false);
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
 
   const [step, setStep] = useState<"password" | "name" | "final">("password");
 
@@ -76,9 +79,16 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
 
   useEffect(() => {
     if (step === "password") {
-      setNextButtonEnabled(password === confirmPassword && password.length > 0);
+      setNextButtonEnabled(
+        password === confirmPassword && isPasswordValid && password.length > 0
+      );
     }
-  }, [password, confirmPassword, step]);
+  }, [password, confirmPassword, step, isPasswordValid]);
+
+  useEffect(() => {
+    if (step === "name") {
+    }
+  });
 
   const validateFields = () => {
     let isNextButtonEnabled = false;
@@ -157,13 +167,13 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
   //             </TouchableOpacity>
   //           ) : null}
   //         </View>
-  //         <TouchableOpacity onPress={handleImageUpload} style={styles.avatar}>
-  //           {avatarUri ? (
-  //             <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
-  //           ) : (
-  //             <Text style={styles.avatarText}>Upload your avatar</Text>
-  //           )}
-  //         </TouchableOpacity>
+  // <TouchableOpacity onPress={handleImageUpload} style={styles.avatar}>
+  //   {avatarUri ? (
+  //     <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
+  //   ) : (
+  //     <Text style={styles.avatarText}>Upload your avatar</Text>
+  //   )}
+  // </TouchableOpacity>
   //         <TextInput
   //           style={styles.input}
   //           placeholder="Username"
@@ -193,21 +203,12 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
     switch (step) {
       case "name":
         return (
-          <View>
-            <Text>What's your name?</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="First Name"
-              onChangeText={(value) => handleChange("firstName", value)}
-              value={formData.firstName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Last Name"
-              onChangeText={(value) => handleChange("lastName", value)}
-              value={formData.lastName}
-            />
-          </View>
+          <SetUpProfileView
+            avatarUri={avatarUri}
+            onImageUpload={handleImageUpload}
+            onFirstNameChange={(value) => handleChange("firstName", value)}
+            onLastNameChange={(value) => handleChange("lastName", value)}
+          />
         );
       case "password":
         return (
@@ -217,6 +218,7 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
             confirmPassword={confirmPassword}
             setPassword={setPassword}
             setConfirmPassword={setConfirmPassword}
+            onValidPassword={setIsPasswordValid}
           />
         );
       case "final":
@@ -239,22 +241,26 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
         <View style={styles.header}>
           <View style={{ flex: 1 }}></View>
           <View style={styles.nextButtonContainer}>
-            {nextButtonEnabled && step === "name" && (
-              <TouchableOpacity
-                onPress={() => setStep("password")}
-                style={styles.nextButton}>
-                <Text style={styles.nextButtonText}>Next</Text>
-              </TouchableOpacity>
-            )}
             {step === "password" && (
               <TouchableOpacity
                 disabled={!nextButtonEnabled}
                 onPress={() => setStep("name")}
-                style={[
-                  styles.nextButton,
-                  !nextButtonEnabled ? { backgroundColor: "grey" } : {},
-                ]}>
-                <Text style={styles.nextButtonText}>Confirm</Text>
+                style={[styles.nextButton]}>
+                <Text
+                  style={[
+                    styles.nextButtonText,
+                    !nextButtonEnabled ? { color: "grey" } : { color: "blue" },
+                  ]}>
+                  Confirm
+                </Text>
+              </TouchableOpacity>
+            )}
+            {nextButtonEnabled && step === "name" && (
+              <TouchableOpacity
+                disabled={!nextButtonEnabled}
+                onPress={() => setStep("final")}
+                style={styles.nextButton}>
+                <Text style={styles.nextButtonText}>Next</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -316,11 +322,12 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     padding: 10,
+    marginRight: 10,
+    width: 80,
     // backgroundColor: "#007BFF",
     // borderRadius: 5,
   },
   nextButtonText: {
-    color: "#FFF",
     fontSize: 16,
   },
   input: {

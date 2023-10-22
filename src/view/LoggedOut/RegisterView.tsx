@@ -197,9 +197,9 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   authTitle: {
-    fontSize: 24, // equivalent to 4rem
+    fontSize: 24,
     fontWeight: "300",
-    marginBottom: 20, // adds some space below the title
+    marginBottom: 20,
     alignSelf: "center",
   },
   title: {

@@ -157,7 +157,7 @@ const FeedView: React.FC = () => {
                 fontWeight: "700",
                 color: theme.textColor,
               }}>
-              COLLECTIONS+
+              COLLECTIONS
             </Text>
           </TouchableOpacity>
         </Animated.View>

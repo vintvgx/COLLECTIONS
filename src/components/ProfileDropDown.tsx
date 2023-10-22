@@ -8,12 +8,14 @@ interface ProfileDropdownMenuProps {
   onNavigateToProfileSettings: () => void;
   onSignOut: () => void;
   onToggle: (isVisible: boolean) => void;
+  onReportBug: () => void;
 }
 
 const DropdownMenu: React.FC<ProfileDropdownMenuProps> = ({
   onSignOut,
   onNavigateToProfileSettings,
   onToggle,
+  onReportBug,
 }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const { darkMode } = useTheme();
@@ -39,6 +41,15 @@ const DropdownMenu: React.FC<ProfileDropdownMenuProps> = ({
 
       {dropdownVisible && (
         <View style={styles.dropdownContainer}>
+          <TouchableOpacity onPress={onReportBug} style={styles.dropdownItem}>
+            <MaterialIcons
+              name="bug-report"
+              size={20}
+              color="gray"
+              style={styles.dropdownItemIcon}
+            />
+            <Text style={styles.dropdownText}>Report Bug</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={onNavigateToProfileSettings}
             style={styles.dropdownItem}>
