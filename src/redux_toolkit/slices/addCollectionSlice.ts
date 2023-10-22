@@ -8,7 +8,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { auth, db, storage } from "../../utils/firebase/f9_config";
-import { ImageCollectionData, DataState, Collections } from "../../model/types";
+import { ImageCollectionData, DataState } from "../../model/types";
 import {
   getDownloadURL,
   ref,
@@ -23,9 +23,13 @@ const initialState: DataState = {
   feedData: [],
   collectionsData: [],
   isLoading: false,
-  error: null,
+  error: undefined,
   feedCollectionCovers: [],
   collectionCovers: [],
+  isRefreshing: false,
+  needsReset: false,
+  lastDoc: undefined,
+  userData: null,
 };
 
 /**
@@ -40,13 +44,13 @@ const addCollectionSlice = createSlice({
   reducers: {
     uploadCollectionData: (state, action: PayloadAction<any[]>) => {
       state.collectionsData = state.collectionsData?.concat(action.payload);
-      (state.isLoading = false), (state.error = null);
+      (state.isLoading = false), (state.error = undefined);
     },
     uploadCollectionToFeed: (state, action: PayloadAction<any[]>) => {
       state.collectionsData = state.collectionsData?.concat(action.payload);
     },
     setLoading: (state) => {
-      (state.isLoading = true), (state.error = null);
+      (state.isLoading = true), (state.error = undefined);
     },
     setError: (state, action: PayloadAction<string>) => {
       (state.isLoading = false), (state.error = action.payload);
@@ -67,7 +71,7 @@ export const addCollectionData =
     const user = auth.currentUser;
 
     if (user) {
-      const { title, image, createdAt } = dataState;
+      const { title, image, createdAt, editorial } = dataState;
 
       // const collectionRef = `collections/${user?.uid}/filenames`
       const collectionRef = doc(
@@ -83,12 +87,14 @@ export const addCollectionData =
           id: title,
           createdAt: createdAt,
           user: user.uid,
+          editorial: editorial,
         });
         console.log("SET FEED_FILENAMES_REF TO FEED");
         await setDoc(FEED_FILENAMES_REF, {
           id: title,
           createdAt: createdAt,
           user: user.uid,
+          editorial: editorial,
         });
         console.log("FILENAME ADDED");
 

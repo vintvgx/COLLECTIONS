@@ -9,10 +9,10 @@ type CollectionFeedViewContentInfoProps = {
   title: string;
   createdAt?: string;
   description: string;
-  avatarUri: string;
+  avatarUri: string | undefined;
   username: string;
-  isEditMode: boolean;
-  onDescriptionChange: (newDescription: string) => void;
+  isEditMode?: boolean;
+  onDescriptionChange?: (newDescription: string) => void;
 };
 
 const CollectionFeedViewContentInfo: React.FC<

@@ -32,6 +32,10 @@ const initialState: DataState = {
   error: undefined,
   collectionCovers: [],
   feedCollectionCovers: [],
+  isRefreshing: false,
+  needsReset: false,
+  lastDoc: undefined,
+  userData: null,
 };
 
 // slice/reducer
@@ -128,13 +132,6 @@ export const fetchFilenames = () => async (dispatch: AppDispatch) => {
         const userImageCollection: ImageCollectionData[] = [];
 
         fetchCollections.forEach((collection) => {
-          // console.log(collection.data());
-          const collection_images = collection.data().images;
-          // console.log(collection_images);
-          const uri = collection.data().imgUri;
-          // console.log(uri);
-          const title = collection.data().title;
-          // console.log(title);
           userImageCollection.push({
             image: collection.data(),
             date: collection.data().date,
@@ -233,23 +230,39 @@ export const fetchProfileCollection =
   (uid: string, title: string) => async (dispatch: AppDispatch) => {
     dispatch(setLoading(true));
     try {
+      const profileCollection: ImageCollectionData[] = [];
+
       const collectionRef = `collections/${uid}/files/${title}/images`;
       const descriptionRef = doc(db, `collections/${uid}/filenames/${title}`);
 
       const collectionSnapshot = await getDocs(collection(db, collectionRef));
       const descriptionSnapshot = await getDoc(descriptionRef);
 
-      const profileCollection: ImageCollectionData[] = [];
-      collectionSnapshot.forEach((doc) => {
-        profileCollection.push({
-          image: doc.data(),
-          date: doc.data().date,
-          title: doc.data().title,
-          description: descriptionSnapshot.data()?.description,
-        });
-      });
+      console.log("Description Snapshot Object:", descriptionSnapshot);
 
-      // dispatch(setCollectionData(profileCollection));
+      if (descriptionSnapshot.exists()) {
+        console.log("Description Data:", descriptionSnapshot.data());
+
+        collectionSnapshot.forEach((doc) => {
+          profileCollection.push({
+            image: doc.data(),
+            date: doc.data().date,
+            title: doc.data().title,
+            editorial: descriptionSnapshot.data()?.editorial,
+          });
+        });
+      } else {
+        console.warn(`Document with title '${title}' does not exist.`);
+        collectionSnapshot.forEach((doc) => {
+          profileCollection.push({
+            image: doc.data(),
+            date: doc.data().date,
+            title: doc.data().title,
+            editorial: "Set Editorial",
+          });
+        });
+      }
+
       dispatch(setProfileCollection(profileCollection));
     } catch (error) {
       console.log(error);
@@ -267,11 +280,11 @@ export const updateProfileCollectionAction = createAsyncThunk(
         payload.uid,
         payload.title,
         payload.updatedData,
-        payload.updatedDescription
+        payload.updatedEditorial
       );
       return {
         updatedData: payload.updatedData,
-        updatedDescription: payload.updatedDescription,
+        updatedDescription: payload.updatedEditorial,
       };
     } catch (error) {
       console.log("DISPATCH ERROR: updateProfileCollectionAction");

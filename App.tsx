@@ -22,6 +22,7 @@ import {
   fetchUserData,
   selectIsProfileSet,
 } from "./src/redux_toolkit/slices/user_data";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const Root = () => {
   const dispatch: AppDispatch = useDispatch();
@@ -73,11 +74,13 @@ const Root = () => {
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <ThemeProvider>
-        <Root />
-      </ThemeProvider>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <ThemeProvider>
+          <Root />
+        </ThemeProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
 

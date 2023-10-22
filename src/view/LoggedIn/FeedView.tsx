@@ -17,6 +17,7 @@ import { useAppSelector } from "../../redux_toolkit";
 import { ImageCollectionData } from "../../model/types";
 import {
   fetchFeedData,
+  resetState,
   setIsRefreshing,
 } from "../../redux_toolkit/slices/retrieveFeedSlice";
 import FeedController from "../../controller/FeedController";
@@ -54,10 +55,7 @@ const FeedView: React.FC = () => {
   }, [dispatch]);
 
   useEffect(() => {
-    console.log("feedCollectionCovers useEFFECT");
     if (feedCollectionCovers) {
-      console.log("feedCollectionCovers if true");
-
       // Adding only new feedCollectionCovers
       setFeedCovers((prevCovers) => {
         const newCovers = [
@@ -83,7 +81,7 @@ const FeedView: React.FC = () => {
       });
 
       feedCovers.forEach((doc) => {
-        console.log("FEEDCOLLECTIONCOVERS:", doc.title);
+        console.log("FEEDCOLLECTIONCOVER:", doc.title);
       });
     }
 
@@ -101,6 +99,7 @@ const FeedView: React.FC = () => {
     setRefreshing(true);
     dispatch(setIsRefreshing(true));
     try {
+      dispatch(resetState());
       await dispatch(fetchFeedData()); // Wait for the dispatch to complete
     } catch (error) {
       // Handle any errors that might occur during the dispatch
@@ -158,7 +157,7 @@ const FeedView: React.FC = () => {
                 fontWeight: "700",
                 color: theme.textColor,
               }}>
-              COLLECTIONS+
+              COLLECTIONS
             </Text>
           </TouchableOpacity>
         </Animated.View>

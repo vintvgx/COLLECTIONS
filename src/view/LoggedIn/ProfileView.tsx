@@ -9,6 +9,7 @@ import {
   Animated,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useState, useRef, useMemo, useContext } from "react";
 import MasonryList from "@react-native-seoul/masonry-list";
@@ -148,9 +149,13 @@ const ProfileView: React.FC = () => {
       </View>
       {username && <Text style={styles.bio}>{username}</Text>}
       <View style={styles.body}>
-        <ScrollView
-          style={{ marginTop: 16, backgroundColor: theme.backgroundColor }}>
-          {!isLoading && (
+        {isLoading ? (
+          <View style={styles.centerLoading}>
+            <ActivityIndicator size="large" color="#000" />
+          </View>
+        ) : (
+          <ScrollView
+            style={{ marginTop: 16, backgroundColor: theme.backgroundColor }}>
             <MasonryList
               data={formattedData}
               numColumns={2}
@@ -177,9 +182,8 @@ const ProfileView: React.FC = () => {
                 setCurrentIndex(index);
               }}
             />
-          )}
-          {isLoading && <Text>Loading...</Text>}
-        </ScrollView>
+          </ScrollView>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -196,6 +200,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 8,
   },
+  centerLoading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   // signOutButtonContainer: {
   //   position: "absolute",
   //   top: 10,

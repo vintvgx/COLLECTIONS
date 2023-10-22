@@ -1,23 +1,11 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-import { useAppSelector } from "../redux_toolkit";
-import { AppDispatch, RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
-
-import {
-  fetchFeedUserData,
-  selectFeedLoading,
-} from "../redux_toolkit/slices/retrieveFeedSlice";
-
-import CustomCachedImage from "../components/CustomCachedImage";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux_toolkit/store"; // Check the actual path of your store file
 import { calculateImageHeight } from "../utils/image";
-// import CachedImage from "expo-cached-image";
-import CachedImage from "react-native-image-cache-wrapper";
-import FeedSkeletonView from "./FeedSkeletonView";
-import { db } from "../utils/firebase/f9_config";
-import { doc, getDoc } from "firebase/firestore";
 import { UserData } from "../model/types";
 import { useTheme } from "../theme/themeContext";
+import MediaComponent from "./MediaComponent";
 
 interface RenderItemProps {
   item: any;
@@ -76,14 +64,9 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
     <View>
       <View style={styles.collectionCard}>
         <View>
-          {/* {isImageLoading ? (
-            <View style={styles.loadingContainer}>
-              <Text>Loading</Text>
-            </View>
-          ) : ( */}
-          <Image
-            source={item.image.uri ? { uri: item.image.uri } : null}
-            // cachekey={cacheKey}
+          <MediaComponent
+            uri={item.image.uri}
+            type={item.image.type}
             style={{
               flex: 1,
               height: calculatedHeight,
@@ -91,10 +74,10 @@ const RenderItem: React.FC<RenderItemProps> = ({ item }) => {
               backgroundColor: "lightgray",
             }}
             resizeMode="cover"
-            // onLoadStrart={handleImageLoadStart}
-            // onLoadEnd={handleImageLoad}
+            controls={false}
+            play={true}
+            muted={true}
           />
-          {/* )} */}
         </View>
         <View
           style={{

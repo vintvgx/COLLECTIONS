@@ -3,12 +3,12 @@ import {
   View,
   TouchableOpacity,
   Text,
-  Image,
-  FlatList,
   Modal,
   TextInput,
   StyleSheet,
   Dimensions,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import DraggableFlatList from "react-native-draggable-flatlist";
 import CreateController from "../../controller/CreateController";
@@ -17,6 +17,8 @@ import { useDispatch } from "react-redux";
 import { RouteProp, useNavigation } from "@react-navigation/native";
 import { RootStackParams } from "../../navigation/Navigation";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { logFeedData } from "../../utils/functions";
+import MediaComponent from "../../components/MediaComponent";
 
 type AddCollectionViewProps = {
   route: RouteProp<RootStackParams, "AddCollectionView">;
@@ -28,11 +30,12 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const { images } = route.params;
-  const [cover, setCover] = useState("");
+  const [cover, setCover] = useState<ImageData | undefined>(undefined);
 
   const [imageList, setImageList] = useState(images);
   const [showModal, setShowModal] = useState(false);
   const [collectionTitle, setCollectionTitle] = useState("");
+  const [editorialText, setEditorialText] = useState("");
   const [imageCount, setImageCount] = useState(0);
 
   const currentDateTime = new Date();
@@ -40,8 +43,9 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
 
   useEffect(() => {
     if (images && images.length > 0) {
-      setCover(images[0].uri);
+      setCover(images[0]);
     }
+    logFeedData(images);
   }, []);
 
   const reorderArray = (
@@ -64,9 +68,11 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
     await CreateController.HANDLE_CONFIRM_BUTTON_PRESSED(
       imageList,
       collectionTitle,
+      editorialText,
       setCollectionTitle,
       setImageCount,
       setShowModal,
+      setEditorialText,
       currentTimestamp,
       dispatch
     );
@@ -94,35 +100,66 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
         style={styles.saveButton}>
         <Text style={styles.saveButtonText}>Save</Text>
       </TouchableOpacity>
-      <View style={{ flex: 1 }}>
-        <Image
-          source={{ uri: cover }}
-          style={styles.cover_image}
-          onError={(error) => console.log(error)}
+      <View style={{ flex: 8 / 9 }}>
+        <MediaComponent
+          uri={cover?.uri}
+          type={cover?.type}
+          style={styles.flatlist_image}
+          controls={true}
+          play={true}
         />
       </View>
-      <View>
+      <View
+        style={{
+          flex: 1 / 9,
+          backgroundColor: "black",
+          width: "auto",
+          padding: 10,
+        }}>
         <DraggableFlatList
           data={imageList}
           renderItem={({
             item,
             drag,
+
             isActive,
           }: {
             item: ImageData;
             drag: () => void;
+
             isActive: boolean;
           }) => (
             <TouchableOpacity
               onLongPress={drag} // Activate the drag when item is long pressed.
               onPress={() => {
-                setCover(item.uri);
+                setCover(item);
               }}
               style={[
                 styles.flatlist_container,
                 isActive ? { backgroundColor: "lightgray" } : {},
               ]}>
-              <Image source={{ uri: item.uri }} style={styles.flatlist_image} />
+              <MediaComponent
+                uri={item.uri}
+                type={item.type}
+                style={
+                  item.type === "image"
+                    ? styles.draggable_image
+                    : styles.flatlist_video
+                }
+                controls={false}
+                play={false}
+              />
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 12,
+                  textAlign: "center",
+                  marginTop: 5,
+                }}>
+                {imageList.indexOf(item) == 0
+                  ? "Cover"
+                  : `${imageList.indexOf(item)}`}
+              </Text>
             </TouchableOpacity>
           )}
           keyExtractor={(item: { uri: string }) => item.uri}
@@ -130,43 +167,76 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
           onDragEnd={handleDragEnd}
         />
       </View>
-      <Modal visible={showModal} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            {/* Added cover image and TextInput in the modal */}
-            <View style={styles.coverContainer}>
-              <Image
+      <Modal
+        visible={showModal}
+        animationType="slide"
+        transparent={true}
+        presentationStyle="overFullScreen">
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={styles.modalContainer}
+            activeOpacity={1}
+            onPressOut={() => setShowModal(false)}>
+            <View
+              style={styles.modalContent}
+              onStartShouldSetResponder={() => true}>
+              {/* Added cover image and TextInput in the modal */}
+              <View style={styles.coverContainer}>
+                {/* <Image
                 source={{ uri: imageList[0].uri }}
                 style={styles.modalCoverImage}
                 onError={(error) => console.log(error)}
-              />
+              /> */}
+                <MediaComponent
+                  uri={imageList[0].uri}
+                  type={imageList[0].type}
+                  style={styles.modalCoverImage}
+                  controls={false}
+                  play={false}
+                />
+              </View>
               <TextInput
-                style={styles.titleInput}
+                style={[
+                  styles.titleInput,
+                  !collectionTitle && { color: "rgba(255,255,255,0.5)" },
+                ]} // change text color when no title is set
                 placeholder="Title Collection"
-                placeholderTextColor="rgba(255,255,255,0.5)"
+                placeholderTextColor="rgba(0,0,0,0.2)" // Changed the placeholder text color
                 value={collectionTitle}
                 onChangeText={setCollectionTitle}
               />
+              <TextInput
+                style={styles.editorialInput}
+                placeholder="Enter description (up to 500 words)"
+                placeholderTextColor="rgba(0,0,0,0.3)"
+                multiline={true}
+                maxLength={500}
+                value={editorialText}
+                onChangeText={setEditorialText}
+              />
+              <Text style={styles.modalSubtitle}>Content: {imageCount}</Text>
+              <Text style={styles.modalSubtitle}>
+                Created At: {new Date(currentDateTime).toLocaleString()}
+              </Text>
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.shareButton,
+                    !collectionTitle
+                      ? { backgroundColor: "rgba(64, 93, 230, 0.5)" }
+                      : {},
+                  ]}
+                  onPress={handleConfirmButtonPressed}
+                  disabled={!collectionTitle} // Disable if no title
+                >
+                  <Text style={styles.shareButtonText}>Share</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <Text style={styles.modalSubtitle}>Image Count: {imageCount}</Text>
-            <Text style={styles.modalSubtitle}>
-              Created At: {new Date(currentDateTime).toLocaleString()}
-            </Text>
-            <View style={styles.buttonContainer}>
-              <TouchableOpacity
-                style={styles.cancelButton}
-                onPress={() => setShowModal(false)}>
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={handleConfirmButtonPressed}>
-                <Text style={styles.confirmButtonText}>Confirm</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
+          </TouchableOpacity>
+        </KeyboardAvoidingView>
       </Modal>
     </View>
   );
@@ -174,23 +244,34 @@ const AddCollectionView: React.FC<AddCollectionViewProps> = ({ route }) => {
 
 const styles = StyleSheet.create({
   flatlist_container: {
-    backgroundColor: "white",
+    // backgroundColor: "white",
     borderRadius: 10,
-    width: Dimensions.get("window").width / 4.5,
-    height: Dimensions.get("window").height / 10,
+    width: 70, //Dimensions.get("window").width / 5,
+    height: "auto", //Dimensions.get("window").height / 10,
     padding: 0,
     margin: 5,
-    marginTop: 30,
+    marginBottom: 0,
     overflow: "hidden",
   },
-  flatlist_image: {
+  draggable_image: {
     width: "100%",
     height: undefined,
     aspectRatio: 1,
     resizeMode: "cover",
-    // borderWidth:2,
-    // borderColor:'#d35647',
+  },
+  flatlist_image: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height,
+    resizeMode: "cover",
     zIndex: -1,
+  },
+
+  flatlist_video: {
+    width: "100%",
+    height: undefined,
+    aspectRatio: 1,
+    // resizeMode: "cover",
+    // other styles similar to flatlist_image
   },
   cover_image: {
     width: Dimensions.get("window").width,
@@ -200,30 +281,52 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   titleInput: {
-    color: "white",
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     textAlign: "center",
-    width: "80%", // Adjust as needed
-    backgroundColor: "rgba(0,0,0,0.3)", // Slight transparent black background for readability
-    padding: 8,
+
+    color: "#000",
+    marginBottom: 10,
+  },
+  editorialInput: {
+    // borderWidth: 2,
+    // borderColor: "#6200EA",
     borderRadius: 10,
+    padding: 12,
+    fontSize: 18,
+    maxHeight: 200,
+    // backgroundColor: "#F3F4F6",
+    borderBottomWidth: 1,
+    borderBottomColor: "gray",
+    marginBottom: 15,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: "flex-end", // Align at the bottom
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.7)",
-    //TODO: Add blur effect to background
-    // backdropFilter: "blur(5px)",
   },
   modalContent: {
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
-    padding: 4,
-    borderRadius: 10,
-    elevation: 5,
-    width: "70%",
-    height: "auto",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    padding: 25,
+    borderRadius: 15,
+    width: "100%",
+    elevation: 5, // Android shadow
+    shadowColor: "#000", // iOS shadow
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   coverContainer: {
     width: "100%",
@@ -250,9 +353,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   modalSubtitle: {
-    fontSize: 14, // increased font size for better readability
+    fontSize: 16,
+    color: "grey",
+    textAlign: "left",
     marginBottom: 5,
-    color: "#212121", // changed text color to a dark gray
   },
   textInput: {
     borderWidth: 1,
@@ -270,6 +374,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     zIndex: 2,
+    elevation: 2,
   },
   saveButtonText: {
     color: "white",
@@ -283,39 +388,32 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 10,
     zIndex: 2,
+    elevation: 2,
   },
   backButtonText: {
     color: "white",
     fontSize: 16,
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
     marginTop: 20,
+    flexDirection: "row",
+    justifyContent: "center",
   },
-  cancelButton: {
-    backgroundColor: "#f0f0f0", // changed background color to a light gray
-    paddingVertical: 10,
+  shareButton: {
+    backgroundColor: "#405DE6", // Instagram gradient start color as a solid example
+    paddingVertical: 12, // More padding for bigger touch target
     paddingHorizontal: 20,
-    borderRadius: 5,
-    borderColor: "lightgray", // added a light gray border
+    borderRadius: 20, // Rounded corners
+    borderColor: "#405DE6", // Same as background color
     borderWidth: 1,
+    width: "80%",
+    marginTop: 10,
   },
-  cancelButtonText: {
-    color: "#212121", // changed text color to a dark gray
-    fontSize: 16,
-  },
-  confirmButton: {
-    backgroundColor: "#4CAF50", // changed background color to a green
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-    borderWidth: 1,
-    borderColor: "#388E3C", // changed border color to a darker green
-  },
-
-  confirmButtonText: {
-    color: "white", // unchanged
+  shareButtonText: {
+    color: "white",
+    fontSize: 16, // Size to fit your needs
+    textAlign: "center", // Center the text
+    fontWeight: "bold", // Bold text
   },
 });
 
