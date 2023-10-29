@@ -77,14 +77,22 @@ export const OnUserSignup = createAsyncThunk<
 
     console.log(user);
 
-    // Save user data to AsyncStorage
-    // await AsyncStorage.setItem("user", JSON.stringify(user));
+    // Log the user in right after sign-up
+    const loggedInUser = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
+
+    // Save user data to AsyncStorage or any other desired storage
+    // await AsyncStorage.setItem("user", JSON.stringify(loggedInUser));
     // await AsyncStorage.setItem("isLoggedIn", "true");
 
-    // thunkAPI.dispatch(setUser(user)); // Update user state in Redux
-    // thunkAPI.dispatch(setLoggedIn(true)); // Update isLoggedIn state in Redux
+    // Update user state in Redux
+    thunkAPI.dispatch(setUser(loggedInUser));
+    thunkAPI.dispatch(setLoggedIn(true));
 
-    return "Signup Success";
+    return "Signup and Login Success";
   } catch (error) {
     console.log(error);
     return thunkAPI.rejectWithValue("Sign Up Error " + error);

@@ -253,6 +253,16 @@ export const fetchDarkModeFromFirebase =
     }
   };
 
+// In your Redux toolkit file (userDataSlice.js)
+export const checkUsernameAvailability =
+  (username: string) => async (dispatch: AppDispatch) => {
+    const usersCollection = collection(db, "users");
+    const querySnapshot = await getDocs(usersCollection);
+    const takenUsernames = querySnapshot.docs.map((doc) => doc.data().username);
+
+    return !takenUsernames.includes(username);
+  };
+
 export const selectUserData = (state: RootState) => state.userData.userData;
 export const selectIsProfileSet = (state: RootState) =>
   state.userData.isProfileSet;

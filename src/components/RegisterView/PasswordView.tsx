@@ -3,7 +3,6 @@ import { View, Text, StyleSheet } from "react-native";
 import RegisterTextField from "./RegisterTextInput";
 
 interface PasswordViewProps {
-  setStep: React.Dispatch<React.SetStateAction<"password" | "name" | "final">>;
   password: string;
   confirmPassword: string;
   setPassword: React.Dispatch<React.SetStateAction<string>>;
@@ -12,7 +11,6 @@ interface PasswordViewProps {
 }
 
 const PasswordView: React.FC<PasswordViewProps> = ({
-  setStep,
   password,
   confirmPassword,
   setPassword,

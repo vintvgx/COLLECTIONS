@@ -18,10 +18,14 @@ import * as Permissions from "expo-permissions";
 import { UserData, ImageData } from "../../model/types";
 import { RootStackParams } from "../../navigation/Navigation";
 import { useDispatch } from "react-redux";
-import { saveUserData } from "../../redux_toolkit/slices/user_data";
+import {
+  saveUserData,
+  checkUsernameAvailability,
+} from "../../redux_toolkit/slices/user_data";
 import { AppDispatch } from "../../redux_toolkit";
 import PasswordView from "../../components/RegisterView/PasswordView";
 import SetUpProfileView from "../../components/RegisterView/SetupProfileView";
+import { OnUserSignup } from "../../redux_toolkit/slices/authSlice";
 
 type RegisterSetupProfileViewProps = {
   route: RouteProp<RootStackParams, "RegisterSetupProfileView">;
@@ -56,6 +60,23 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
     bio: "",
     avatar: undefined,
   });
+  const [isUsernameAvailable, setIsUsernameAvailable] = useState(true);
+  const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  const [timerElapsed, setTimerElapsed] = useState(false);
+
+  // Use useEffect to control the message display and timer
+  useEffect(() => {
+    if (showWelcomeMessage) {
+      const timer = setTimeout(() => {
+        setShowWelcomeMessage(false);
+        setTimerElapsed(true);
+      }, 5000); // 5000 milliseconds (5 seconds)
+
+      return () => {
+        clearTimeout(timer); // Clear the timer if the component unmounts
+      };
+    }
+  }, [showWelcomeMessage]);
 
   useEffect(() => {
     const getPermissions = async () => {
@@ -79,7 +100,7 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
 
   useEffect(() => {
     if (step === "password") {
-      setNextButtonEnabled(
+      setConfirmButtonEnabled(
         password === confirmPassword && isPasswordValid && password.length > 0
       );
     }
@@ -87,24 +108,48 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
 
   useEffect(() => {
     if (step === "name") {
+      const { firstName, lastName, username } = formData;
+      setNextButtonEnabled(
+        firstName !== "" &&
+          lastName !== "" &&
+          username.length >= 3 &&
+          isUsernameAvailable
+      );
+      // setNextButtonEnabled = firstName !== "" && lastName !== "";
     }
   });
 
-  const validateFields = () => {
-    let isNextButtonEnabled = false;
-
-    if (step === "name") {
-      const { firstName, lastName } = formData;
-      isNextButtonEnabled = firstName !== "" && lastName !== "";
+  // Function to check username availability
+  const handleCheckUsername = async (username: string) => {
+    if (username.length >= 3) {
+      const isAvailable = await dispatch(checkUsernameAvailability(username));
+      setIsUsernameAvailable(isAvailable);
+    } else {
+      // If the username is less than 3 characters, don't show green or red text
+      setIsUsernameAvailable(true);
     }
-
-    // For other steps, update this condition
-    // else if (step === 'password') {
-    //  ...
-    // }
-
-    setNextButtonEnabled(isNextButtonEnabled);
   };
+
+  // Listen for changes in the username
+  useEffect(() => {
+    handleCheckUsername(formData.username);
+  }, [formData.username]);
+
+  // const validateFields = () => {
+  //   let isNextButtonEnabled = false;
+
+  //   if (step === "name") {
+  //     const { firstName, lastName } = formData;
+  //     isNextButtonEnabled = firstName !== "" && lastName !== "";
+  //   }
+
+  //   // For other steps, update this condition
+  //   // else if (step === 'password') {
+  //   //  ...
+  //   // }
+
+  //   setNextButtonEnabled(isNextButtonEnabled);
+  // };
 
   const handleImageUpload = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -151,7 +196,7 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
       ...prevState,
       [field]: value,
     }));
-    validateFields();
+    // validateFields();
   };
 
   //   return (
@@ -206,14 +251,19 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
           <SetUpProfileView
             avatarUri={avatarUri}
             onImageUpload={handleImageUpload}
+            username={formData.username}
+            firstName={formData.firstName}
+            lastName={formData.lastName}
+            onUserNameChage={(value) => handleChange("username", value)}
             onFirstNameChange={(value) => handleChange("firstName", value)}
             onLastNameChange={(value) => handleChange("lastName", value)}
+            isUsernameAvailable={isUsernameAvailable}
+            onCheckUsername={handleCheckUsername}
           />
         );
       case "password":
         return (
           <PasswordView
-            setStep={setStep}
             password={password}
             confirmPassword={confirmPassword}
             setPassword={setPassword}
@@ -224,10 +274,9 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
       case "final":
         return (
           <View>
-            {/* The rest of your original form */}
-            <TouchableOpacity onPress={handleUserDataUpload}>
-              <Text>Continue</Text>
-            </TouchableOpacity>
+            {showWelcomeMessage && (
+              <Text style={styles.welcomeMessage}>Welcome to Collections!</Text>
+            )}
           </View>
         );
       default:
@@ -243,24 +292,48 @@ const RegisterSetupProfileView: React.FC<RegisterSetupProfileViewProps> = ({
           <View style={styles.nextButtonContainer}>
             {step === "password" && (
               <TouchableOpacity
-                disabled={!nextButtonEnabled}
+                disabled={!confirmButtonEnabled}
                 onPress={() => setStep("name")}
                 style={[styles.nextButton]}>
                 <Text
                   style={[
                     styles.nextButtonText,
-                    !nextButtonEnabled ? { color: "grey" } : { color: "blue" },
+                    !confirmButtonEnabled
+                      ? { color: "grey" }
+                      : { color: "blue" },
                   ]}>
                   Confirm
                 </Text>
               </TouchableOpacity>
             )}
-            {nextButtonEnabled && step === "name" && (
+            {confirmButtonEnabled && step === "name" && (
               <TouchableOpacity
                 disabled={!nextButtonEnabled}
-                onPress={() => setStep("final")}
+                onPress={async () => {
+                  setShowWelcomeMessage(true);
+                  setStep("final");
+                  try {
+                    // Dispatch the OnUserSignup action to sign up the user
+                    await dispatch(
+                      OnUserSignup({
+                        email,
+                        username: formData.username,
+                        password,
+                      })
+                    );
+                  } catch (error) {
+                    console.error(error);
+                  }
+                  handleUserDataUpload();
+                }}
                 style={styles.nextButton}>
-                <Text style={styles.nextButtonText}>Next</Text>
+                <Text
+                  style={[
+                    styles.nextButtonText,
+                    !nextButtonEnabled ? { color: "grey" } : { color: "blue" },
+                  ]}>
+                  Next
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -371,6 +444,13 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "600",
     fontSize: 18,
+  },
+  welcomeMessage: {
+    fontSize: 28,
+    color: "#007BFF", // Blue color
+    textAlign: "center",
+    margin: 20,
+    fontWeight: "bold",
   },
 });
 

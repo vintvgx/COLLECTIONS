@@ -4,7 +4,7 @@ import { animateLabel } from "../../utils/animation";
 
 interface RegisterTextFieldProps {
   label: string;
-  isSecure: boolean;
+  isSecure?: boolean;
   onTextChange: Function;
   focusAuto?: boolean;
 }
