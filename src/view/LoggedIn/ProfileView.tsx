@@ -51,8 +51,8 @@ const ProfileView: React.FC = () => {
     useNavigation<NativeStackNavigationProp<RootStackParams>>();
 
   const { collectionCovers } = useAppSelector(({ filenames }) => filenames);
-  const { avatar, username } = useAppSelector(
-    (state: any) => state.userData.userData
+  const { avatar, username, bio } = useAppSelector(
+    (state) => state.userData.userData
   );
   const [currentIndex, setCurrentIndex] = useState(0);
   const [shouldBlurBackground, setShouldBlurBackground] = useState(false);
@@ -128,12 +128,12 @@ const ProfileView: React.FC = () => {
               </Text>
               <Text style={styles.statLabel}>Collections</Text>
             </View>
-            <View style={styles.stat}>
+            {/* <View style={styles.stat}>
               <Text style={[styles.statNumber, { color: theme.color }]}>
                 123
               </Text>
               <Text style={styles.statLabel}>Fans</Text>
-            </View>
+            </View> */}
           </View>
         </View>
 
@@ -147,7 +147,7 @@ const ProfileView: React.FC = () => {
           />
         </View>
       </View>
-      {username && <Text style={styles.bio}>{username}</Text>}
+      {username && <Text style={styles.bio}>{bio}</Text>}
       <View style={styles.body}>
         {isLoading ? (
           <View style={styles.centerLoading}>
